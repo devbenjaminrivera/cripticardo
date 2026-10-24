@@ -85,12 +85,32 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     });
   }, [cryptic.id, letters, revealedIndices, definitionRevealed, isSolved, surrendered, timeSpent]);
 
+  // Normalizador para comparar ignorando tildes y mayúsculas
+  const normalizeText = (str: string) =>
+    str
+      .trim()
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
   // Handlers
   const handleChangeLetter = (index: number, val: string) => {
     const newLetters = [...letters];
     newLetters[index] = val;
     setLetters(newLetters);
     if (feedback.text) setFeedback({});
+
+    // Auto-comprobar si todas las casillas están llenas y coinciden con la solución
+    if (
+      val &&
+      newLetters.every((l) => l && l.trim().length > 0) &&
+      newLetters.length === cryptic.letterCount
+    ) {
+      const userWord = newLetters.join('');
+      if (normalizeText(userWord) === normalizeText(cryptic.answer)) {
+        triggerVictory();
+      }
+    }
   };
 
   const handleToggleDefinition = () => {
@@ -105,7 +125,10 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     const unrevealedIndices: number[] = [];
 
     for (let i = 0; i < cryptic.letterCount; i++) {
-      if (!revealedIndices.includes(i) && letters[i] !== cleanAnswer[i]) {
+      if (
+        !revealedIndices.includes(i) &&
+        normalizeText(letters[i] || '') !== normalizeText(cleanAnswer[i] || '')
+      ) {
         unrevealedIndices.push(i);
       }
     }
@@ -137,7 +160,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     });
 
     // Check if word is now complete and correct
-    if (nextLetters.join('') === cleanAnswer) {
+    if (normalizeText(nextLetters.join('')) === normalizeText(cleanAnswer)) {
       triggerVictory();
     }
   };
@@ -177,10 +200,11 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
   };
 
   const handleCheckAnswer = () => {
-    const userWord = letters.join('').toUpperCase();
-    const cleanAnswer = cryptic.answer.toUpperCase();
+    const isComplete = letters.every((l) => l && l.trim().length > 0);
+    const userWord = letters.join('');
+    const cleanAnswer = cryptic.answer;
 
-    if (userWord.length < cryptic.letterCount || userWord.includes('')) {
+    if (!isComplete || letters.length < cryptic.letterCount) {
       setFeedback({
         text: `Completa todas las ${cryptic.letterCount} letras antes de verificar.`,
         type: 'error',
@@ -189,7 +213,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       return;
     }
 
-    if (userWord === cleanAnswer) {
+    if (normalizeText(userWord) === normalizeText(cleanAnswer)) {
       triggerVictory();
     } else {
       setFeedback({

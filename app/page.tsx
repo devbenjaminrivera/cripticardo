@@ -76,7 +76,7 @@ export default function HomePage() {
               title="Acceso panel de creador"
             >
               <KeyRound className="w-3 h-3" />
-              <span>Editorial</span>
+              <span>Ingresar</span>
             </Link>
           </div>
         </div>

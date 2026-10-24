@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Calendar, HelpCircle, KeyRound, Sparkles } from 'lucide-react';
+import { BookOpen, KeyRound } from 'lucide-react';
 
 interface NavbarProps {
   onOpenGuide?: () => void;
@@ -16,7 +16,7 @@ export default function Navbar({ onOpenGuide, solvedCount }: NavbarProps) {
   return (
     <header className="border-b border-ink-300 bg-parchment-100/90 backdrop-blur-md sticky top-0 z-30 shadow-xs">
       {/* Top Banner / Masthead */}
-      <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -38,12 +38,22 @@ export default function Navbar({ onOpenGuide, solvedCount }: NavbarProps) {
         </div>
 
         {/* Right side status & admin access */}
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-2 sm:gap-3 text-sm">
           {typeof solvedCount === 'number' && (
-            <div className="flex items-center gap-2 bg-parchment-200/80 px-3 py-1 rounded border border-parchment-300">
+            <div className="hidden sm:flex items-center gap-2 bg-parchment-200/80 px-3 py-1 rounded border border-parchment-300">
               <span className="text-xs font-semibold uppercase tracking-wider text-ink-700">Completados:</span>
               <span className="font-mono font-bold text-ink-900">{solvedCount}</span>
             </div>
+          )}
+
+          {onOpenGuide && !isAdmin && (
+            <button
+              onClick={onOpenGuide}
+              className="flex items-center gap-1.5 text-xs text-terracotta hover:text-terracotta-dark font-medium py-1.5 px-2.5 rounded border border-terracotta/30 bg-terracotta-light/20 hover:bg-terracotta-light/40 transition-colors cursor-pointer"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>¿Cómo se juega?</span>
+            </button>
           )}
 
           {isAdmin ? (
@@ -57,7 +67,7 @@ export default function Navbar({ onOpenGuide, solvedCount }: NavbarProps) {
             <Link
               href="/login"
               title="Ingresar"
-              className="text-xs flex items-center gap-1.5 text-ink-600 hover:text-ink-900 py-1 px-2 rounded hover:bg-parchment-200 transition-colors"
+              className="text-xs flex items-center gap-1.5 text-ink-600 hover:text-ink-900 py-1.5 px-2.5 rounded hover:bg-parchment-200 transition-colors font-medium border border-transparent hover:border-ink-300"
             >
               <KeyRound className="w-3.5 h-3.5 text-ink-600" />
               <span>Ingresar</span>
@@ -65,46 +75,6 @@ export default function Navbar({ onOpenGuide, solvedCount }: NavbarProps) {
           )}
         </div>
       </div>
-
-      {/* Navigation tabs */}
-      {!isAdmin && (
-        <div className="max-w-4xl mx-auto px-4 flex items-center justify-between border-t border-ink-300/40 text-xs sm:text-sm font-medium">
-          <div className="flex gap-1 sm:gap-4 overflow-x-auto">
-            <Link
-              href="/"
-              className={`px-3 py-2 border-b-2 font-semibold whitespace-nowrap transition-colors ${
-                pathname === '/'
-                  ? 'border-ink-900 text-ink-900'
-                  : 'border-transparent text-ink-600 hover:text-ink-900'
-              }`}
-            >
-              Juego de Hoy
-            </Link>
-
-            <Link
-              href="/archivo"
-              className={`px-3 py-2 border-b-2 font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
-                pathname === '/archivo'
-                  ? 'border-ink-900 text-ink-900'
-                  : 'border-transparent text-ink-600 hover:text-ink-900'
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Archivo</span>
-            </Link>
-          </div>
-
-          {onOpenGuide && (
-            <button
-              onClick={onOpenGuide}
-              className="flex items-center gap-1.5 text-xs text-terracotta hover:text-terracotta-dark font-medium py-1.5 px-2 rounded hover:bg-terracotta-light/30 transition-colors"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>¿Cómo se juega?</span>
-            </button>
-          )}
-        </div>
-      )}
     </header>
   );
 }

@@ -191,8 +191,22 @@ export function getDailyCryptic(targetDate?: string): Cryptic | null {
   return published[targetIndex];
 }
 
-// Obtener el críptico del día (asíncrono con Supabase)
 export async function fetchDailyCrypticAsync(targetDate?: string): Promise<Cryptic | null> {
+  // En el navegador, consultar primero la API del servidor /api/daily (seguro y siempre disponible en Vercel)
+  if (typeof window !== 'undefined' && !targetDate) {
+    try {
+      const res = await fetch('/api/daily');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.id) {
+          return data as Cryptic;
+        }
+      }
+    } catch (e) {
+      console.warn('Fallo al obtener desde /api/daily, intentando consulta directa:', e);
+    }
+  }
+
   const chileDate = targetDate || getChileDateString();
 
   if (isSupabaseConfigured && supabase) {

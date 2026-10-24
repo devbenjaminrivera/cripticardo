@@ -29,12 +29,16 @@ export default function LetterGrid({
 
   useEffect(() => {
     inputRefs.current = inputRefs.current.slice(0, length);
-    // Autofocus solo una vez al cargar si autoFocus es true y no está resuelto
-    if (autoFocus && !hasFocusedRef.current && !isSolved) {
-      hasFocusedRef.current = true;
-      const firstEmpty = letters.findIndex((l) => !l);
-      const targetIndex = firstEmpty !== -1 ? firstEmpty : 0;
-      inputRefs.current[targetIndex]?.focus();
+    // Autofocus al cargar o al reiniciar el intento si autoFocus es true y no está resuelto
+    if (!isSolved) {
+      if (autoFocus && !hasFocusedRef.current) {
+        hasFocusedRef.current = true;
+        const firstEmpty = letters.findIndex((l) => !l);
+        const targetIndex = firstEmpty !== -1 ? firstEmpty : 0;
+        inputRefs.current[targetIndex]?.focus();
+      }
+    } else {
+      hasFocusedRef.current = false;
     }
   }, [length, autoFocus, isSolved, letters]);
 

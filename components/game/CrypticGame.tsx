@@ -28,39 +28,30 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
   }>({});
   const [timeSpent, setTimeSpent] = useState<number>(0);
   const [hintsUsedCount, setHintsUsedCount] = useState<number>(0);
+  const [hasPreviouslySolved, setHasPreviouslySolved] = useState<boolean>(false);
+  const [showPreviousSolution, setShowPreviousSolution] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
-  // Restore saved progress if available
+  // Cada vez que el usuario entra a la página, el tablero se presenta limpio para que pueda resolverlo
   useEffect(() => {
     const saved = getPlayerProgress(cryptic.id);
-    if (saved) {
-      if (saved.userLetters && saved.userLetters.length === cryptic.letterCount) {
-        setLetters(saved.userLetters);
-      }
-      if (saved.revealedIndices) {
-        setRevealedIndices(saved.revealedIndices);
-      }
-      if (saved.definitionRevealed) {
-        setDefinitionRevealed(true);
-      }
-      if (saved.solved) {
-        setIsSolved(true);
-      }
-      if (saved.surrendered) {
-        setSurrendered(true);
-      }
-      if (typeof saved.timeSpentSeconds === 'number') {
-        setTimeSpent(saved.timeSpentSeconds);
-      }
-    } else {
-      // Reset state for new cryptic
-      setLetters(Array(cryptic.letterCount).fill(''));
-      setRevealedIndices([]);
-      setDefinitionRevealed(false);
-      setIsSolved(false);
-      setSurrendered(false);
-      setTimeSpent(0);
-      setHintsUsedCount(0);
+    const wasCompleted = Boolean(saved?.completedBefore || saved?.solved);
+
+    if (wasCompleted) {
+      setHasPreviouslySolved(true);
     }
+
+    // El tablero siempre inicia limpio y activo para permitir resolver el enigma
+    setLetters(Array(cryptic.letterCount).fill(''));
+    setRevealedIndices([]);
+    setDefinitionRevealed(false);
+    setIsSolved(false);
+    setSurrendered(false);
+    setTimeSpent(0);
+    setHintsUsedCount(0);
+    setFeedback({});
+    setShowPreviousSolution(false);
+    setIsInitialized(true);
   }, [cryptic.id, cryptic.letterCount]);
 
   // Timer while not solved
@@ -74,6 +65,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
 
   // Save progress when letters or state changes
   useEffect(() => {
+    if (!isInitialized) return;
     savePlayerProgress(cryptic.id, {
       crypticId: cryptic.id,
       solved: isSolved,
@@ -83,7 +75,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       timeSpentSeconds: timeSpent,
       surrendered,
     });
-  }, [cryptic.id, letters, revealedIndices, definitionRevealed, isSolved, surrendered, timeSpent]);
+  }, [isInitialized, cryptic.id, letters, revealedIndices, definitionRevealed, isSolved, surrendered, timeSpent]);
 
   // Normalizador para comparar ignorando tildes y mayúsculas
   const normalizeText = (str: string) =>
@@ -179,9 +171,25 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     }
   };
 
+  const handleResetGame = () => {
+    setLetters(Array(cryptic.letterCount).fill(''));
+    setRevealedIndices([]);
+    setDefinitionRevealed(false);
+    setIsSolved(false);
+    setSurrendered(false);
+    setTimeSpent(0);
+    setHintsUsedCount(0);
+    setShowPreviousSolution(false);
+    setFeedback({
+      text: 'Tablero reiniciado. ¡A resolverlo de nuevo!',
+      type: 'info',
+    });
+  };
+
   const triggerVictory = () => {
     setIsSolved(true);
     setDefinitionRevealed(true);
+    setHasPreviouslySolved(true);
     setFeedback({
       text: '¡Respuesta correcta! Has descifrado el críptico.',
       type: 'success',
@@ -231,6 +239,22 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Aviso amigable si ya lo completó previamente hoy pero desea resolverlo de nuevo */}
+      {hasPreviouslySolved && !isSolved && (
+        <div className="bg-sage-light/35 border border-sage/30 rounded-lg p-3 sm:p-3.5 flex items-center justify-between flex-wrap gap-2 text-xs text-sage-dark shadow-2xs">
+          <span className="font-medium flex items-center gap-1.5">
+            <span>✨ Ya resolviste este enigma hoy. ¡Puedes resolverlo de nuevo las veces que quieras!</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowPreviousSolution((prev) => !prev)}
+            className="underline hover:text-sage-dark font-semibold cursor-pointer text-xs"
+          >
+            {showPreviousSolution ? 'Ocultar anatomía' : 'Ver anatomía previa'}
+          </button>
+        </div>
+      )}
+
       {/* Tarjeta de la pista */}
       <ClueCard cryptic={cryptic} showDefinition={definitionRevealed} />
 
@@ -269,13 +293,14 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
         />
       </div>
 
-      {/* Anatomía explicada al resolver o rendirse */}
-      {isSolved && (
+      {/* Anatomía explicada al resolver, rendirse o consultar la solución previa */}
+      {(isSolved || showPreviousSolution) && (
         <AnatomyBreakdown
           cryptic={cryptic}
           hintsUsedCount={hintsUsedCount}
           timeSpentSeconds={timeSpent}
           surrendered={surrendered}
+          onPlayAgain={isSolved ? handleResetGame : undefined}
         />
       )}
     </div>

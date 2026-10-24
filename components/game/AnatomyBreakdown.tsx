@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Cryptic } from '@/lib/types';
-import { Check, Copy, Share2, Trophy, Clock, Lightbulb } from 'lucide-react';
+import { Check, Copy, Share2, Trophy, Clock, Lightbulb, RotateCcw } from 'lucide-react';
 import { generateShareText } from '@/lib/playerStorage';
 
 interface AnatomyBreakdownProps {
@@ -10,6 +10,7 @@ interface AnatomyBreakdownProps {
   hintsUsedCount: number;
   timeSpentSeconds: number;
   surrendered: boolean;
+  onPlayAgain?: () => void;
 }
 
 export default function AnatomyBreakdown({
@@ -17,6 +18,7 @@ export default function AnatomyBreakdown({
   hintsUsedCount,
   timeSpentSeconds,
   surrendered,
+  onPlayAgain,
 }: AnatomyBreakdownProps) {
   const [copied, setCopied] = useState(false);
 
@@ -83,22 +85,37 @@ export default function AnatomyBreakdown({
           )}
         </div>
 
-        <button
-          onClick={handleShare}
-          className="w-full sm:w-auto text-xs font-semibold px-4 py-2 bg-ink-900 text-parchment-50 hover:bg-ink-800 rounded transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
-        >
-          {copied ? (
-            <>
-              <Check className="w-3.5 h-3.5 text-sage-light" />
-              <span>¡Copiado al portapapeles!</span>
-            </>
-          ) : (
-            <>
-              <Share2 className="w-3.5 h-3.5" />
-              <span>Compartir resultado</span>
-            </>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {onPlayAgain && (
+            <button
+              type="button"
+              onClick={onPlayAgain}
+              className="flex-1 sm:flex-initial text-xs font-semibold px-3.5 py-2 bg-white hover:bg-parchment-50 text-ink-900 border border-ink-300 hover:border-ink-800 rounded transition-all flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer"
+              title="Resolver este enigma de nuevo desde cero"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-ink-700" />
+              <span>Resolver de nuevo</span>
+            </button>
           )}
-        </button>
+
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex-1 sm:flex-initial text-xs font-semibold px-4 py-2 bg-ink-900 text-parchment-50 hover:bg-ink-800 rounded transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-sage-light" />
+                <span>¡Copiado!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Compartir</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Resumen de estadísticas del jugador */}

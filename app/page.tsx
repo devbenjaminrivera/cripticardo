@@ -6,7 +6,8 @@ import CrypticGame from '@/components/game/CrypticGame';
 import GuideModal from '@/components/guide/GuideModal';
 import { fetchDailyCrypticAsync } from '@/lib/dataService';
 import { Cryptic } from '@/lib/types';
-import { BookOpen } from 'lucide-react';
+import Link from 'next/link';
+import { BookOpen, Archive } from 'lucide-react';
 
 export default function HomePage() {
   const [cryptic, setCryptic] = useState<Cryptic | null>(null);
@@ -54,13 +55,22 @@ export default function HomePage() {
           <p className="font-serif">
             Cripticardo — Enigmas verbales diarios creados por <strong>Daniel Fajardo</strong>.
           </p>
-          <button
-            onClick={() => setIsGuideOpen(true)}
-            className="hover:text-ink-900 underline flex items-center gap-1"
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Guía de Mecanismos</span>
-          </button>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/archivo"
+              className="hover:text-ink-900 underline flex items-center gap-1 cursor-pointer"
+            >
+              <Archive className="w-3.5 h-3.5" />
+              <span>Mi Archivo</span>
+            </Link>
+            <button
+              onClick={() => setIsGuideOpen(true)}
+              className="hover:text-ink-900 underline flex items-center gap-1 cursor-pointer"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Guía de Mecanismos</span>
+            </button>
+          </div>
         </div>
       </footer>
 

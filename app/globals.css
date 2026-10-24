@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-parchment-50: #FDFBF7;
+  --color-parchment-100: #F9F5EC;
+  --color-parchment-200: #F2EBD9;
+  --color-parchment-300: #E5DAC0;
+  --color-parchment-400: #CDBE9B;
+
+  --color-ink-900: #1C1917;
+  --color-ink-800: #292524;
+  --color-ink-700: #44403C;
+  --color-ink-600: #57534E;
+  --color-ink-400: #A8A29E;
+  --color-ink-300: #D6D3D1;
+
+  --color-terracotta: #C2593F;
+  --color-terracotta-dark: #9E3F27;
+  --color-terracotta-light: #EAD5CE;
+
+  --color-sage: #436A55;
+  --color-sage-dark: #2E4C3C;
+  --color-sage-light: #D3E0D8;
+
+  --font-serif: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono), monospace;
+}
+
+body {
+  background-color: #F9F5EC;
+  color: #1C1917;
+  background-image: radial-gradient(#E5DAC0 0.85px, transparent 0.85px);
+  background-size: 24px 24px;
+  font-family: var(--font-sans);
+}
+
+/* Animación de error al validar */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.shake-cell {
+  animation: shake 0.35s ease-in-out;
+}
+
+/* Casillas de letras */
+.letter-input {
+  caret-color: transparent;
+  transition: all 0.15s ease;
+}
+
+.letter-input:focus {
+  outline: none;
+  border-color: #1C1917;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 2px rgba(28, 25, 23, 0.15);
+}
+
+.letter-input.revealed {
+  background-color: #F2EBD9;
+  color: #C2593F;
+  font-style: italic;
+}
+
+.letter-input.solved {
+  background-color: #D3E0D8;
+  border-color: #436A55;
+  color: #2E4C3C;
+}

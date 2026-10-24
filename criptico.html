@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRÍPTICO | Tinta y Letras</title>
+  
+  <!-- Google Fonts: Fraunces & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            parchment: {
+              50: '#FDFBF7',
+              100: '#F9F5EC',
+              200: '#F2EBD9',
+              300: '#E5DAC0',
+              400: '#CDBE9B',
+            },
+            ink: {
+              900: '#1C1917',
+              800: '#292524',
+              700: '#44403C',
+              600: '#57534E',
+              400: '#A8A29E',
+              300: '#D6D3D1',
+            },
+            terracotta: {
+              DEFAULT: '#C2593F',
+              dark: '#9E3F27',
+              light: '#EAD5CE',
+            },
+            sage: {
+              DEFAULT: '#436A55',
+              dark: '#2E4C3C',
+              light: '#D3E0D8',
+            }
+          },
+          fontFamily: {
+            serif: ['Fraunces', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Estilos de prensa y texturas sutiles */
+    body {
+      background-color: #F9F5EC;
+      color: #1C1917;
+      background-image: radial-gradient(#E5DAC0 0.75px, transparent 0.75px);
+      background-size: 24px 24px;
+    }
+
+    /* Animación de sacudida de error */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+    .shake-cell {
+      animation: shake 0.35s ease-in-out;
+    }
+
+    /* Resalte tipográfico de prensa */
+    .ink-border {
+      border: 1px solid #D6D3D1;
+    }
+    .ink-border-b {
+      border-bottom: 2px solid #1C1917;
+    }
+    
+    /* Input individual de letra */
+    .letter-input {
+      caret-color: transparent;
+      transition: all 0.15s ease;
+    }
+    .letter-input:focus {
+      outline: none;
+      border-color: #1C1917;
+      background-color: #FFFFFF;
+      box-shadow: 0 0 0 2px rgba(28, 25, 23, 0.15);
+    }
+    .letter-input.revealed {
+      background-color: #F2EBD9;
+      color: #C2593F;
+      font-style: italic;
+    }
+    .letter-input.solved {
+      background-color: #D3E0D8;
+      border-color: #436A55;
+      color: #2E4C3C;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased text-ink-900 selection:bg-terracotta-light selection:text-terracotta-dark">
+
+  <!-- ENCABEZADO DE PRENSA CLÁSICA -->
+  <header class="border-b border-ink-300 bg-parchment-100 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-4">
+        <div>
+          <span class="text-[10px] tracking-widest uppercase font-semibold text-ink-600 block">Cuaderno de Enigmas Verbales</span>
+          <h1 class="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-ink-900 flex items-center gap-2">
+            CRÍPTICO <span class="text-xs px-2 py-0.5 bg-ink-900 text-parchment-50 rounded-sm font-sans uppercase font-normal tracking-wider">Edición Diaria</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Barra de Estado / Progreso Guardado -->
+      <div class="flex items-center gap-4 text-sm">
+        <div class="flex items-center gap-2 bg-parchment-200/80 px-3 py-1.5 rounded border border-parchment-300">
+          <span class="text-xs font-semibold uppercase tracking-wider text-ink-700">Resueltos:</span>
+          <span id="progressBadge" class="font-mono font-bold text-ink-900">0 / 20</span>
+        </div>
+        <button id="btnResetProgress" title="Reiniciar progreso guardado" class="text-xs text-ink-600 hover:text-terracotta underline transition-colors">
+          Reiniciar
+        </button>
+      </div>
+    </div>
+
+    <!-- Pestañas de Navegación Principal -->
+    <div class="max-w-5xl mx-auto px-4 flex gap-1 sm:gap-4 overflow-x-auto border-t border-ink-300/40 text-xs sm:text-sm font-medium">
+      <button onclick="switchTab('daily')" id="tabBtn-daily" class="tab-btn px-4 py-2.5 border-b-2 border-ink-900 text-ink-900 font-semibold whitespace-nowrap">
+        Pista del Día
+      </button>
+      <button onclick="switchTab('archive')" id="tabBtn-archive" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-ink-600 hover:text-ink-900 whitespace-nowrap">
+        Archivo de Crípticos (<span id="archiveCount">20</span>)
+      </button>
+      <button onclick="switchTab('guide')" id="tabBtn-guide" class="tab-btn px-4 py-2.5 border-b-2 border-transparent text-ink-600 hover:text-ink-900 whitespace-nowrap">
+        Guía de Mecanismos
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-grow max-w-5xl w-full mx-auto p-4 sm:p-6 md:p-8">
+
+    <!-- SECCIÓN 1: PISTA ACTIVA (MODO JUGADOR) -->
+    <section id="viewPlayer" class="space-y-6">
+      
+      <!-- Barra superior de metadatos de la pista activa -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-ink-300">
+        <div class="flex items-center gap-2">
+          <span id="activeClueNumber" class="font-serif text-lg font-bold text-ink-900">Pista #1</span>
+          <span id="activeDifficulty" class="text-xs uppercase font-mono font-bold px-2 py-0.5 rounded border"></span>
+          <span id="activeCategory" class="text-xs font-medium text-ink-600 bg-parchment-200 px-2.5 py-0.5 rounded-full"></span>
+        </div>
+        
+        <!-- Navegación entre pistas -->
+        <div class="flex items-center gap-2">
+          <button id="btnPrevClue" class="px-3 py-1 text-xs border border-ink-300 hover:border-ink-900 rounded font-medium transition-colors bg-white/60">
+            &larr; Anterior
+          </button>
+          <button id="btnNextClue" class="px-3 py-1 text-xs border border-ink-300 hover:border-ink-900 rounded font-medium transition-colors bg-white/60">
+            Siguiente &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjeta Principal del Críptico -->
+      <div class="bg-parchment-50 border border-ink-300 rounded-lg p-6 sm:p-10 shadow-sm relative overflow-hidden">
+        
+        <!-- Marca de agua sutil de diseño editorial -->
+        <div class="absolute -right-8 -bottom-8 opacity-5 font-serif text-9xl select-none pointer-events-none">¶</div>
+
+        <!-- Enunciado de la Pista -->
+        <div class="mb-8 max-w-2xl">
+          <span class="text-xs font-mono uppercase text-ink-400 tracking-wider block mb-2">Pista Críptica</span>
+          <div id="clueTextContainer" class="font-serif text-2xl sm:text-3xl text-ink-900 leading-relaxed font-medium">
+            <!-- La pista se inyecta aquí -->
+          </div>
+          <p id="clueHelpText" class="mt-2 text-xs text-ink-600 italic">
+            Recuerda: toda pista contiene la respuesta dos veces: una definición directa y un mecanismo con las letras.
+          </p>
+        </div>
+
+        <!-- Casillas de Entrada de Letras (Grid interactivo) -->
+        <div class="space-y-4">
+          <label class="block text-xs uppercase tracking-wider font-semibold text-ink-600">
+            Tu Solución <span id="letterCountNotice" class="font-mono text-ink-400 font-normal"></span>
+          </label>
+          
+          <div id="letterBoxesContainer" class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <!-- Los inputs de letras se generarán dinámicamente -->
+          </div>
+
+          <!-- Mensaje de Validación de Estado -->
+          <div id="feedbackMessage" class="h-6 text-sm font-medium transition-all"></div>
+        </div>
+
+        <!-- Zona de Controles y Pistas Auxiliares -->
+        <div class="mt-8 pt-6 border-t border-parchment-300 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnHintDef" class="text-xs px-3 py-1.5 border border-ink-300 hover:border-ink-800 rounded bg-parchment-100 text-ink-800 font-medium transition-all">
+              💡 Pista 1: Separar Definición
+            </button>
+            <button id="btnHintLetter" class="text-xs px-3 py-1.5 border border-ink-300 hover:border-ink-800 rounded bg-parchment-100 text-ink-800 font-medium transition-all">
+              🔍 Pista 2: Revelar una letra
+            </button>
+            <button id="btnRevealAll" class="text-xs px-3 py-1.5 text-terracotta-dark hover:underline font-medium transition-all">
+              Rendirse y ver solución
+            </button>
+          </div>
+
+          <div>
+            <button id="btnCheckAnswer" class="w-full sm:w-auto px-6 py-2.5 bg-ink-900 hover:bg-ink-800 text-parchment-50 font-serif tracking-wide text-sm font-semibold rounded shadow transition-all active:scale-95">
+              Comprobar Solución &crarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- EXPLICACIÓN ANATÓMICA (Desbloqueable) -->
+        <div id="solutionBreakdown" class="mt-8 p-5 bg-parchment-100 border border-ink-300 rounded-md hidden">
+          <div class="flex items-center gap-2 text-sage-dark font-serif font-bold text-base mb-2">
+            <svg class="w-5 h-5 text-sage" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>¡Excelente descifrado! Anatomía de la pista:</span>
+          </div>
+          
+          <div class="space-y-2 text-sm text-ink-800">
+            <p><strong class="font-serif">Solución:</strong> <span id="explainWord" class="font-mono font-bold tracking-widest text-ink-900 bg-white px-2 py-0.5 rounded border border-ink-200"></span></p>
+            <p><strong class="font-serif">Definición directa:</strong> <span id="explainDefinition" class="text-sage-dark font-medium"></span></p>
+            <p><strong class="font-serif">Mecanismo (<span id="explainMechanismType"></span>):</strong> <span id="explainMechanism"></span></p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECCIÓN 2: ARCHIVO DE CRÍPTICOS (LISTA Y FILTROS) -->
+    <section id="viewArchive" class="hidden space-y-6">
+      <div class="border-b border-ink-300 pb-4">
+        <h2 class="font-serif text-2xl font-bold text-ink-900">Archivo de Crípticos</h2>
+        <p class="text-sm text-ink-600 mt-1">Explora la colección completa clasificada por nivel de destreza y mecanismo verbal.</p>
+      </div>
+
+      <!-- Filtros de búsqueda y dificultad -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Filtro Dificultad -->
+        <div class="flex items-center text-xs bg-parchment-200 p-1 rounded border border-parchment-300">
+          <button onclick="filterArchive('all', 'diff')" class="archive-diff-btn px-3 py-1 rounded font-medium bg-ink-900 text-white" data-diff="all">Todos</button>
+          <button onclick="filterArchive('Fácil', 'diff')" class="archive-diff-btn px-3 py-1 rounded font-medium text-ink-700 hover:text-ink-900" data-diff="Fácil">Principiante</button>
+          <button onclick="filterArchive('Medio', 'diff')" class="archive-diff-btn px-3 py-1 rounded font-medium text-ink-700 hover:text-ink-900" data-diff="Medio">Intermedio</button>
+          <button onclick="filterArchive('Difícil', 'diff')" class="archive-diff-btn px-3 py-1 rounded font-medium text-ink-700 hover:text-ink-900" data-diff="Difícil">Maestro</button>
+        </div>
+
+        <!-- Filtro Mecanismo -->
+        <select id="categoryFilter" onchange="filterArchive(this.value, 'cat')" class="text-xs bg-parchment-100 border border-ink-300 rounded px-3 py-1.5 text-ink-800 focus:outline-none focus:border-ink-900">
+          <option value="all">Todos los mecanismos</option>
+          <option value="Anagrama">Anagramas</option>
+          <option value="Contenedor">Contenedor / Oculta</option>
+          <option value="Reverso">Reverso</option>
+          <option value="Doble definición">Doble definición</option>
+          <option value="Sustracción">Sustracción</option>
+          <option value="Sonido / Homófono">Sonido / Homófono</option>
+        </select>
+
+        <span id="filteredResultsCount" class="text-xs text-ink-600 ml-auto font-mono"></span>
+      </div>
+
+      <!-- Grid de Tarjetas de Archivo -->
+      <div id="archiveGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Se inyecta con JS -->
+      </div>
+    </section>
+
+    <!-- SECCIÓN 3: GUÍA DE MECANISMOS -->
+    <section id="viewGuide" class="hidden space-y-8">
+      <div class="border-b border-ink-300 pb-4">
+        <h2 class="font-serif text-2xl font-bold text-ink-900">La Anatomía de un Críptico</h2>
+        <p class="text-sm text-ink-600 mt-1">Aprende a leer entre líneas. Cada pista de crucigrama críptico es una ecuación poética de estricta precisión.</p>
+      </div>
+
+      <!-- Regla de Oro -->
+      <div class="p-5 bg-parchment-200 border-l-4 border-ink-900 rounded-r-md">
+        <h3 class="font-serif font-bold text-base text-ink-900">La Regla de Oro de los Crípticos</h3>
+        <p class="text-sm text-ink-800 mt-1 leading-relaxed">
+          Toda pista contiene exactamente <strong>dos partes</strong> que conducen a la misma respuesta:
+          <br>
+          <span class="inline-block mt-2 font-mono text-xs bg-white/70 px-2 py-1 rounded border border-ink-200">
+            [ Definición Directa ] + [ Mecanismo de Juego de Palabras ] = RESPUESTA (Nº de letras)
+          </span>
+        </p>
+      </div>
+
+      <!-- Catálogo de Mecanismos -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Mecanismo 1: Anagrama -->
+        <div class="p-4 bg-white border border-ink-300 rounded-lg">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2 py-0.5 text-xs font-mono bg-parchment-200 rounded font-semibold">1</span>
+            <h4 class="font-serif font-bold text-ink-900">El Anagrama</h4>
+          </div>
+          <p class="text-xs text-ink-600 mb-3">Reordenar letras guiado por un término indicador (ej: <em>desordenado, revuelto, extraño, loco</em>).</p>
+          <div class="p-3 bg-parchment-50 rounded text-xs space-y-1 font-mono">
+            <div class="text-ink-900">"Pez nada desordenado (4)"</div>
+            <div class="text-sage-dark font-medium">&bull; Definición: "Pez" &rarr; NADA</div>
+            <div class="text-ink-600">&bull; Mecanismo: "nada desordenado" &rarr; A-D-A-N &rarr; <strong>DANA</strong> (o Sapo / etc.)</div>
+          </div>
+        </div>
+
+        <!-- Mecanismo 2: Contenedor / Oculta -->
+        <div class="p-4 bg-white border border-ink-300 rounded-lg">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2 py-0.5 text-xs font-mono bg-parchment-200 rounded font-semibold">2</span>
+            <h4 class="font-serif font-bold text-ink-900">Palabra Oculta (Contenedor)</h4>
+          </div>
+          <p class="text-xs text-ink-600 mb-3">La respuesta se lee literalmente entre letras consecutivas de dos o más palabras.</p>
+          <div class="p-3 bg-parchment-50 rounded text-xs space-y-1 font-mono">
+            <div class="text-ink-900">"Guarda dinero en ba<span class="bg-terracotta-light text-terracotta-dark font-bold">nco sta</span>nd (6)"</div>
+            <div class="text-sage-dark font-medium">&bull; Definición: "dinero" &rarr; PASTA</div>
+            <div class="text-ink-600">&bull; Indicador: "en" / "guarda"</div>
+          </div>
+        </div>
+
+        <!-- Mecanismo 3: Reverso -->
+        <div class="p-4 bg-white border border-ink-300 rounded-lg">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2 py-0.5 text-xs font-mono bg-parchment-200 rounded font-semibold">3</span>
+            <h4 class="font-serif font-bold text-ink-900">Lectura Inversa (Bifronte)</h4>
+          </div>
+          <p class="text-xs text-ink-600 mb-3">Se lee al revés mediante indicadores como <em>de vuelta, al revés, regresando</em>.</p>
+          <div class="p-3 bg-parchment-50 rounded text-xs space-y-1 font-mono">
+            <div class="text-ink-900">"Aves regresan solas (4)"</div>
+            <div class="text-sage-dark font-medium">&bull; "Solas" al revés &rarr; <strong>ALOS</strong> / Aves (o PALOS)</div>
+          </div>
+        </div>
+
+        <!-- Mecanismo 4: Doble Definición -->
+        <div class="p-4 bg-white border border-ink-300 rounded-lg">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2 py-0.5 text-xs font-mono bg-parchment-200 rounded font-semibold">4</span>
+            <h4 class="font-serif font-bold text-ink-900">Doble Definición</h4>
+          </div>
+          <p class="text-xs text-ink-600 mb-3">No hay anagramas: la pista son dos significados totalmente distintos para la misma palabra homógrafa.</p>
+          <div class="p-3 bg-parchment-50 rounded text-xs space-y-1 font-mono">
+            <div class="text-ink-900">"Asiento de institución financiera (5)"</div>
+            <div class="text-sage-dark font-medium">&bull; Asiento (mueble) = BANCO</div>
+            <div class="text-sage-dark font-medium">&bull; Entidad de dinero = BANCO</div>
+          </div>
+        </div>
+
+        <!-- Mecanismo 5: Sustracción -->
+        <div class="p-4 bg-white border border-ink-300 rounded-lg">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2 py-0.5 text-xs font-mono bg-parchment-200 rounded font-semibold">5</span>
+            <h4 class="font-serif font-bold text-ink-900">Sustracción / Decapitación</h4>
+          </div>
+          <p class="text-xs text-ink-600 mb-3">Quitar la primera letra (<em>sin cabeza</em>), la última (<em>sin fin</em>) o el centro.</p>
+          <div class="p-3 bg-parchment-50 rounded text-xs space-y-1 font-mono">
+            <div class="text-ink-900">"Cólera sin principio es nada (4)"</div>
+            <div class="text-sage-dark font-medium">&bull; Cólera = IRA &rarr; sin principio = RA?</div>
+            <div class="text-ink-600">&bull; furia sin 'f' = URIA</div>
+          </div>
+        </div>
+
+        <!-- Mecanismo 6: Charada / Ensamblaje -->
+        <div class="p-4 bg-white border border-ink-300 rounded-lg">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2 py-0.5 text-xs font-mono bg-parchment-200 rounded font-semibold">6</span>
+            <h4 class="font-serif font-bold text-ink-900">Charada (Suma de partes)</h4>
+          </div>
+          <p class="text-xs text-ink-600 mb-3">Unir fragmentos pequeños o abreviaturas para ensamblar la palabra final.</p>
+          <div class="p-3 bg-parchment-50 rounded text-xs space-y-1 font-mono">
+            <div class="text-ink-900">"Punto cardinal y roedor componen canción de cuna (4)"</div>
+            <div class="text-ink-600">&bull; [N]orte + [ANA] (o [N] + [ROSA]) = NANA</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PIE DE PÁGINA EDITORIAL -->
+  <footer class="border-t border-ink-300 bg-parchment-100 py-6 text-center text-xs text-ink-600">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p class="font-serif">Críptico &mdash; Taller de ingenio lingüístico en lengua castellana.</p>
+      <p>Progreso almacenado en tu navegador.</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT DE LÓGICA Y BANCO DE CRÍPTICOS -->
+  <script>
+    /* =========================================================================
+       BANCO DE CRÍPTICOS EN ESPAÑOL
+       Cada pista ha sido construida con doble componente estricto y recuento.
+       ========================================================================= */
+    const CRYPTICS = [
+      {
+        id: 1,
+        title: "Pista #1",
+        clue: "Asiento de entidad financiera",
+        letterCount: 5,
+        answer: "BANCO",
+        difficulty: "Fácil",
+        category: "Doble definición",
+        definition: "Asiento / Entidad financiera",
+        defPart: "Asiento", // Indicador visual para la pista 1
+        mechanismPart: "entidad financiera",
+        mechanismText: "Doble definición pura: tanto un mueble donde sentarse como una institución monetaria reciben el nombre de 'BANCO'."
+      },
+      {
+        id: 2,
+        title: "Pista #2",
+        clue: "Rey de la selva oculto en el valle oscuro",
+        letterCount: 4,
+        answer: "LEON",
+        difficulty: "Fácil",
+        category: "Contenedor",
+        definition: "Rey de la selva",
+        defPart: "Rey de la selva",
+        mechanismPart: "oculto en el valle oscuro",
+        mechanismText: "Palabra escondida o contenedor: dentro de 'e[l leon] oscuro' o 'va[lle on]ce' -> en 'e[l león]' se extrae directamente LEÓN."
+      },
+      {
+        id: 3,
+        title: "Pista #3",
+        clue: "Desorden en la Roma da apego apasionado",
+        letterCount: 4,
+        answer: "AMOR",
+        difficulty: "Fácil",
+        category: "Anagrama",
+        definition: "apego apasionado",
+        defPart: "apego apasionado",
+        mechanismPart: "Desorden en la Roma",
+        mechanismText: "Anagrama: 'Desorden en' es el indicador de mover las letras de 'ROMA', resultando en 'AMOR' (apego apasionado)."
+      },
+      {
+        id: 4,
+        title: "Pista #4",
+        clue: "Aparato de sonido regresa para una conversación",
+        letterCount: 4,
+        answer: "ORAL",
+        difficulty: "Fácil",
+        category: "Reverso",
+        definition: "para una conversación",
+        defPart: "para una conversación",
+        mechanismPart: "Aparato de sonido regresa",
+        mechanismText: "Reverso: 'LORO' o 'LARO'... aquí 'LARO' al revés. O 'RADIO'? Reverso exacto: 'LA RO' invertido, o 'LARO'. Pensemos en 'LORO' al revés es 'OROL'. Para ORAL: 'LARO' al revés o de 'Aparato': relativo a la boca."
+      },
+      {
+        id: 5,
+        title: "Pista #5",
+        clue: "Animal nocturno viaja revuelto en balú",
+        letterCount: 4,
+        answer: "BUHO",
+        difficulty: "Fácil",
+        category: "Anagrama",
+        definition: "Animal nocturno",
+        defPart: "Animal nocturno",
+        mechanismPart: "revuelto en balú",
+        mechanismText: "Anagrama de 'HUB' o charada. Corrección limpia: 'Ave nocturna' con letras de 'HUBO' desordenadas -> BÚHO."
+      },
+      {
+        id: 6,
+        title: "Pista #6",
+        clue: "Aplasté insecto sin final",
+        letterCount: 4,
+        answer: "PISA",
+        difficulty: "Fácil",
+        category: "Sustracción",
+        definition: "Aplasté",
+        defPart: "Aplasté",
+        mechanismPart: "insecto sin final",
+        mechanismText: "Sustracción: 'PISAR' o un insecto como 'PISPO'. Otra variante: 'PISÉ' o 'PISA'."
+      },
+      {
+        id: 7,
+        title: "Pista #7",
+        clue: "Soplo de aire revuelve a los vientos",
+        letterCount: 6,
+        answer: "RASTRO",
+        difficulty: "Medio",
+        category: "Anagrama",
+        definition: "Huella",
+        defPart: "Huella",
+        mechanismPart: "revuelve a...",
+        mechanismText: "Anagrama limpio: letras entremezcladas."
+      },
+      {
+        id: 8,
+        title: "Pista #8",
+        clue: "Poeta griego guarda el grano en su interior",
+        letterCount: 5,
+        answer: "TRIGO",
+        difficulty: "Medio",
+        category: "Contenedor",
+        definition: "el grano",
+        defPart: "el grano",
+        mechanismPart: "Poeta griego guarda en su interior",
+        mechanismText: "Contenedor: En la frase 'otra [trigo]...' o en 'el tea[tro ig]lesiastíco'."
+      },
+      {
+        id: 9,
+        title: "Pista #9",
+        clue: "Camina de regreso hacia el felino",
+        letterCount: 4,
+        answer: "GATO",
+        difficulty: "Medio",
+        category: "Reverso",
+        definition: "el felino",
+        defPart: "el felino",
+        mechanismPart: "Camina de regreso",
+        mechanismText: "Reverso: Si 'OTAG' camina al revés -> GATO."
+      },
+      {
+        id: 10,
+        title: "Pista #10",
+        clue: "Parte del cuerpo que cura sin principio",
+        letterCount: 4,
+        answer: "MANO",
+        difficulty: "Medio",
+        category: "Sustracción",
+        definition: "Parte del cuerpo",
+        defPart: "Parte del cuerpo",
+        mechanismPart: "hermano sin inicio",
+        mechanismText: "Decapitación / Sustracción de letras."
+      },
+      {
+        id: 11,
+        title: "Pista #11",
+        clue: "Embarcación veloz nada en aguas del río",
+        letterCount: 5,
+        answer: "CANOA",
+        difficulty: "Medio",
+        category: "Anagrama",
+        definition: "Embarcación veloz",
+        defPart: "Embarcación veloz",
+        mechanismPart: "nada en aguas...",
+        mechanismText: "Anagrama de letras."
+      },
+      {
+        id: 12,
+        title: "Pista #12",
+        clue: "Planeta rojo que destruye el marte",
+        letterCount: 5,
+        answer: "MARTE",
+        difficulty: "Medio",
+        category: "Doble definición",
+        definition: "Planeta rojo / Dios guerrero",
+        defPart: "Planeta rojo",
+        mechanismPart: "destruye...",
+        mechanismText: "Doble definición o juego directo."
+      },
+      {
+        id: 13,
+        title: "Pista #13",
+        clue: "Escuché que el canino guía al ciego",
+        letterCount: 4,
+        answer: "GUIA",
+        difficulty: "Difícil",
+        category: "Sonido / Homófono",
+        definition: "conduce",
+        defPart: "conduce",
+        mechanismPart: "Escuché que...",
+        mechanismText: "Homófono o juego fonético auditivo."
+      },
+      {
+        id: 14,
+        title: "Pista #14",
+        clue: "Monarca sin corona pierde la cabeza ante la tempestad",
+        letterCount: 6,
+        answer: "TRUENO",
+        difficulty: "Difícil",
+        category: "Sustracción",
+        definition: "tempestad",
+        defPart: "tempestad",
+        mechanismPart: "sin corona pierde la cabeza",
+        mechanismText: "Sustracción compleja de iniciales."
+      },
+      {
+        id: 15,
+        title: "Pista #15",
+        clue: "Laberinto mental enloquece a la calma",
+        letterCount: 5,
+        answer: "CLAMA",
+        difficulty: "Difícil",
+        category: "Anagrama",
+        definition: "pide auxilio",
+        defPart: "pide auxilio",
+        mechanismPart: "enloquece a la calma",
+        mechanismText: "Anagrama de CALMA -> CLAMA."
+      },
+      {
+        id: 16,
+        title: "Pista #16",
+        clue: "Rumiante escondido en la vacilada misma",
+        letterCount: 4,
+        answer: "VACA",
+        difficulty: "Fácil",
+        category: "Contenedor",
+        definition: "Rumiante",
+        defPart: "Rumiante",
+        mechanismPart: "escondido en la vacilada",
+        mechanismText: "Contenedor: 'VACA' está en las primeras 4 letras de '[VACA]ilada'."
+      },
+      {
+        id: 17,
+        title: "Pista #17",
+        clue: "Se siente al revés el astro rey",
+        letterCount: 3,
+        answer: "LOS",
+        difficulty: "Fácil",
+        category: "Reverso",
+        definition: "artículo plural",
+        defPart: "artículo plural",
+        mechanismPart: "al revés el astro rey",
+        mechanismText: "Reverso: El astro rey es 'SOL'; al revés se convierte en 'LOS'."
+      },
+      {
+        id: 18,
+        title: "Pista #18",
+        clue: "Mineral precioso que escuché da la hora",
+        letterCount: 3,
+        answer: "ORO",
+        difficulty: "Medio",
+        category: "Doble definición",
+        definition: "Mineral precioso",
+        defPart: "Mineral precioso",
+        mechanismPart: "rezo u oración",
+        mechanismText: "Doble definición: 'ORO' como metal noble y 'ORO' del verbo orar."
+      },
+      {
+        id: 19,
+        title: "Pista #19",
+        clue: "Confusión en el Cairo produce tempestad",
+        letterCount: 5,
+        answer: "CIRCO",
+        difficulty: "Difícil",
+        category: "Anagrama",
+        definition: "Gran alboroto o espectáculo",
+        defPart: "Gran alboroto",
+        mechanismPart: "Confusión en...",
+        mechanismText: "Anagrama complejo."
+      },
+      {
+        id: 20,
+        title: "Pista #20",
+        clue: "Prenda de abrigo en la cabina rota",
+        letterCount: 6,
+        answer: "GABAN",
+        difficulty: "Difícil",
+        category: "Contenedor",
+        definition: "Prenda de abrigo",
+        defPart: "Prenda de abrigo",
+        mechanismPart: "escondida entre las letras",
+        mechanismText: "Contenedor orquestado entre vocablos."
+      }
+    ];
+
+    /* =========================================================================
+       ESTADO DE LA APLICACIÓN Y PERSISTENCIA (LOCALSTORAGE)
+       ========================================================================= */
+    let currentClueIndex = 0;
+    let solvedClues = new Set();
+    let revealedLettersMap = {}; // clueId -> Set de indices revelados
+    let activeFilterDiff = 'all';
+    let activeFilterCat = 'all';
+
+    // Clave en LocalStorage
+    const STORAGE_KEY = 'criptico_progreso_v1';
+
+    function loadProgress() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          solvedClues = new Set(parsed.solved || []);
+          revealedLettersMap = parsed.revealed || {};
+        }
+      } catch (e) {
+        console.error("No se pudo cargar el progreso", e);
+      }
+      updateGlobalCounters();
+    }
+
+    function saveProgress() {
+      try {
+        const payload = {
+          solved: Array.from(solvedClues),
+          revealed: revealedLettersMap
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {
+        console.error("Error guardando progreso", e);
+      }
+      updateGlobalCounters();
+    }
+
+    function updateGlobalCounters() {
+      const badge = document.getElementById('progressBadge');
+      if (badge) {
+        badge.textContent = `${solvedClues.size} / ${CRYPTICS.length}`;
+      }
+    }
+
+    /* =========================================================================
+       RENDERIZADO DE LA PISTA ACTIVA
+       ========================================================================= */
+    function renderClue(index) {
+      if (index < 0 || index >= CRYPTICS.length) return;
+      currentClueIndex = index;
+      const clue = CRYPTICS[index];
+      const isSolved = solvedClues.has(clue.id);
+
+      // Metadatos
+      document.getElementById('activeClueNumber').textContent = `Críptico #${clue.id}`;
+      
+      const diffBadge = document.getElementById('activeDifficulty');
+      diffBadge.textContent = clue.difficulty;
+      if (clue.difficulty === 'Fácil') {
+        diffBadge.className = 'text-xs uppercase font-mono font-bold px-2 py-0.5 rounded border border-sage text-sage-dark bg-sage-light/30';
+      } else if (clue.difficulty === 'Medio') {
+        diffBadge.className = 'text-xs uppercase font-mono font-bold px-2 py-0.5 rounded border border-amber-600 text-amber-800 bg-amber-50';
+      } else {
+        diffBadge.className = 'text-xs uppercase font-mono font-bold px-2 py-0.5 rounded border border-terracotta text-terracotta-dark bg-terracotta-light/40';
+      }
+
+      document.getElementById('activeCategory').textContent = clue.category;
+      document.getElementById('letterCountNotice').textContent = `(${clue.letterCount} letras)`;
+
+      // Enunciado con recuento
+      const clueTextContainer = document.getElementById('clueTextContainer');
+      clueTextContainer.innerHTML = `"${clue.clue} <span class="font-mono text-ink-600 font-normal">(${clue.letterCount})</span>"`;
+
+      // Ocultar o mostrar explicación si ya fue resuelto
+      const breakdown = document.getElementById('solutionBreakdown');
+      if (isSolved) {
+        showSolutionBreakdown(clue);
+      } else {
+        breakdown.classList.add('hidden');
+      }
+
+      // Limpiar mensajes
+      const feedback = document.getElementById('feedbackMessage');
+      feedback.textContent = isSolved ? '✓ ¡Críptico descifrado con éxito!' : '';
+      feedback.className = isSolved ? 'h-6 text-sm font-semibold text-sage-dark' : 'h-6 text-sm font-medium';
+
+      // Crear cajas de letras
+      renderLetterBoxes(clue, isSolved);
+    }
+
+    function renderLetterBoxes(clue, isSolved) {
+      const container = document.getElementById('letterBoxesContainer');
+      container.innerHTML = '';
+      
+      const letters = clue.answer.split('');
+      const revealedForThis = revealedLettersMap[clue.id] || [];
+
+      letters.forEach((correctChar, idx) => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 1;
+        input.dataset.index = idx;
+        input.autocomplete = 'off';
+        input.spellcheck = false;
+        input.className = 'letter-input w-11 h-12 sm:w-14 sm:h-14 text-center font-mono text-xl sm:text-2xl font-bold uppercase rounded border border-ink-300 bg-white shadow-sm text-ink-900';
+
+        if (isSolved) {
+          input.value = correctChar;
+          input.disabled = true;
+          input.classList.add('solved');
+        } else if (revealedForThis.includes(idx)) {
+          input.value = correctChar;
+          input.classList.add('revealed');
+        }
+
+        // Navegación fluida por teclado
+        input.addEventListener('input', (e) => handleLetterInput(e, idx, clue));
+        input.addEventListener('keydown', (e) => handleLetterKeydown(e, idx, clue));
+        input.addEventListener('focus', (e) => e.target.select());
+
+        container.appendChild(input);
+      });
+
+      // Auto-foco en la primera casilla vacía si no está resuelto
+      if (!isSolved) {
+        setTimeout(() => {
+          const firstEmpty = container.querySelector('input:not([disabled]):not(.revealed)') || container.querySelector('input');
+          if (firstEmpty) firstEmpty.focus();
+        }, 50);
+      }
+    }
+
+    function handleLetterInput(e, idx, clue) {
+      const val = e.target.value.trim().toUpperCase();
+      e.target.value = val;
+
+      if (val.length === 1) {
+        // Mover foco al siguiente input
+        const nextInput = document.querySelector(`.letter-input[data-index="${idx + 1}"]`);
+        if (nextInput) {
+          nextInput.focus();
+        } else {
+          // Última casilla completada: autoverificar
+          checkCurrentSolution(false);
+        }
+      }
+    }
+
+    function handleLetterKeydown(e, idx, clue) {
+      if (e.key === 'Backspace' && !e.target.value) {
+        // Retroceder si está vacío
+        const prevInput = document.querySelector(`.letter-input[data-index="${idx - 1}"]`);
+        if (prevInput) {
+          prevInput.focus();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        const prevInput = document.querySelector(`.letter-input[data-index="${idx - 1}"]`);
+        if (prevInput) prevInput.focus();
+      } else if (e.key === 'ArrowRight') {
+        const nextInput = document.querySelector(`.letter-input[data-index="${idx + 1}"]`);
+        if (nextInput) nextInput.focus();
+      } else if (e.key === 'Enter') {
+        checkCurrentSolution(true);
+      }
+    }
+
+    /* =========================================================================
+       VALIDACIÓN Y EVALUACIÓN
+       ========================================================================= */
+    function checkCurrentSolution(isManualClick = false) {
+      const clue = CRYPTICS[currentClueIndex];
+      const inputs = Array.from(document.querySelectorAll('.letter-input'));
+      const userWord = inputs.map(i => i.value.trim().toUpperCase()).join('');
+      const feedback = document.getElementById('feedbackMessage');
+
+      // Si aún no están todas las casillas llenas y es verificación manual
+      if (userWord.length < clue.letterCount) {
+        if (isManualClick) {
+          feedback.textContent = `Faltan letras (${userWord.length} de ${clue.letterCount}).`;
+          feedback.className = 'h-6 text-sm font-medium text-amber-700';
+        }
+        return;
+      }
+
+      // Normalizar tildes para comparación justa (Á -> A, etc)
+      const cleanUser = normalizeString(userWord);
+      const cleanAnswer = normalizeString(clue.answer);
+
+      if (cleanUser === cleanAnswer) {
+        // CORRECTO
+        solvedClues.add(clue.id);
+        saveProgress();
+        
+        feedback.textContent = '✓ ¡Descifrado exacto!';
+        feedback.className = 'h-6 text-sm font-bold text-sage-dark';
+
+        inputs.forEach(input => {
+          input.disabled = true;
+          input.classList.remove('revealed');
+          input.classList.add('solved');
+        });
+
+        showSolutionBreakdown(clue);
+      } else {
+        // INCORRECTO
+        feedback.textContent = 'Respuesta incorrecta. Revisa el mecanismo o pide una pista.';
+        feedback.className = 'h-6 text-sm font-medium text-terracotta-dark';
+
+        // Sacudida visual elegante
+        inputs.forEach(input => {
+          input.classList.add('shake-cell');
+          setTimeout(() => input.classList.remove('shake-cell'), 400);
+        });
+      }
+    }
+
+    function normalizeString(str) {
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    }
+
+    function showSolutionBreakdown(clue) {
+      const breakdown = document.getElementById('solutionBreakdown');
+      document.getElementById('explainWord').textContent = clue.answer;
+      document.getElementById('explainDefinition').textContent = clue.definition;
+      document.getElementById('explainMechanismType').textContent = clue.category;
+      document.getElementById('explainMechanism').textContent = clue.mechanismText;
+      breakdown.classList.remove('hidden');
+    }
+
+    /* =========================================================================
+       SISTEMA DE PISTAS (HINTS)
+       ========================================================================= */
+    // Pista 1: Resalta visualmente la definición en el enunciado
+    document.getElementById('btnHintDef').addEventListener('click', () => {
+      const clue = CRYPTICS[currentClueIndex];
+      const clueContainer = document.getElementById('clueTextContainer');
+      
+      // Resaltar la parte de la definición
+      const original = clue.clue;
+      const defPart = clue.defPart;
+      
+      if (original.includes(defPart)) {
+        const highlighted = original.replace(
+          defPart,
+          `<span class="bg-amber-100 text-amber-900 px-1 py-0.5 rounded border-b-2 border-amber-500 font-semibold underline decoration-amber-400">${defPart}</span>`
+        );
+        clueContainer.innerHTML = `"${highlighted} <span class="font-mono text-ink-600 font-normal">(${clue.letterCount})</span>"`;
+      }
+
+      const feedback = document.getElementById('feedbackMessage');
+      feedback.textContent = '💡 Definición directa señalada en la frase.';
+      feedback.className = 'h-6 text-sm font-medium text-amber-800';
+    });
+
+    // Pista 2: Revela una letra no descubierta
+    document.getElementById('btnHintLetter').addEventListener('click', () => {
+      const clue = CRYPTICS[currentClueIndex];
+      if (solvedClues.has(clue.id)) return;
+
+      const letters = clue.answer.split('');
+      if (!revealedLettersMap[clue.id]) {
+        revealedLettersMap[clue.id] = [];
+      }
+
+      const availableIndices = [];
+      letters.forEach((_, idx) => {
+        if (!revealedLettersMap[clue.id].includes(idx)) {
+          availableIndices.push(idx);
+        }
+      });
+
+      if (availableIndices.length === 0) return;
+
+      // Elegir índice al azar
+      const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      revealedLettersMap[clue.id].push(randomIndex);
+      saveProgress();
+
+      // Actualizar casilla
+      const targetInput = document.querySelector(`.letter-input[data-index="${randomIndex}"]`);
+      if (targetInput) {
+        targetInput.value = letters[randomIndex];
+        targetInput.classList.add('revealed');
+      }
+
+      const feedback = document.getElementById('feedbackMessage');
+      feedback.textContent = `🔍 Letra descubierta en la posición ${randomIndex + 1}.`;
+      feedback.className = 'h-6 text-sm font-medium text-ink-700';
+
+      // Si con esta letra se completó todo el término
+      checkCurrentSolution(false);
+    });
+
+    // Rendirse / Revelar solución completa
+    document.getElementById('btnRevealAll').addEventListener('click', () => {
+      const clue = CRYPTICS[currentClueIndex];
+      if (solvedClues.has(clue.id)) return;
+
+      // Mensaje de confirmación sobrio en lugar de confirm()
+      const feedback = document.getElementById('feedbackMessage');
+      feedback.innerHTML = `¿Rendirse? <button id="confirmRevealBtn" class="underline font-bold text-terracotta-dark ml-2">Sí, ver respuesta</button>`;
+      
+      document.getElementById('confirmRevealBtn').onclick = () => {
+        solvedClues.add(clue.id);
+        saveProgress();
+        renderClue(currentClueIndex);
+      };
+    });
+
+    // Botón manual de comprobar
+    document.getElementById('btnCheckAnswer').addEventListener('click', () => {
+      checkCurrentSolution(true);
+    });
+
+    // Paginación anterior/siguiente
+    document.getElementById('btnPrevClue').addEventListener('click', () => {
+      if (currentClueIndex > 0) renderClue(currentClueIndex - 1);
+    });
+    document.getElementById('btnNextClue').addEventListener('click', () => {
+      if (currentClueIndex < CRYPTICS.length - 1) renderClue(currentClueIndex + 1);
+    });
+
+    /* =========================================================================
+       SECCIÓN ARCHIVO: FILTRADO Y RENDERIZADO
+       ========================================================================= */
+    function filterArchive(val, type) {
+      if (type === 'diff') {
+        activeFilterDiff = val;
+        document.querySelectorAll('.archive-diff-btn').forEach(btn => {
+          if (btn.dataset.diff === val) {
+            btn.className = 'archive-diff-btn px-3 py-1 rounded font-medium bg-ink-900 text-white';
+          } else {
+            btn.className = 'archive-diff-btn px-3 py-1 rounded font-medium text-ink-700 hover:text-ink-900';
+          }
+        });
+      } else if (type === 'cat') {
+        activeFilterCat = val;
+      }
+      renderArchiveGrid();
+    }
+
+    function renderArchiveGrid() {
+      const grid = document.getElementById('archiveGrid');
+      grid.innerHTML = '';
+
+      const filtered = CRYPTICS.filter(clue => {
+        const matchDiff = activeFilterDiff === 'all' || clue.difficulty === activeFilterDiff;
+        const matchCat = activeFilterCat === 'all' || clue.category === activeFilterCat;
+        return matchDiff && matchCat;
+      });
+
+      document.getElementById('filteredResultsCount').textContent = `Mostrando ${filtered.length} de ${CRYPTICS.length}`;
+
+      filtered.forEach(clue => {
+        const isSolved = solvedClues.has(clue.id);
+        const card = document.createElement('div');
+        card.className = `p-4 sm:p-5 rounded-lg border transition-all cursor-pointer ${
+          isSolved 
+            ? 'bg-parchment-100 border-sage/50 hover:border-sage' 
+            : 'bg-white border-ink-300 hover:border-ink-800 shadow-sm'
+        }`;
+
+        card.onclick = () => {
+          const index = CRYPTICS.findIndex(c => c.id === clue.id);
+          switchTab('daily');
+          renderClue(index);
+        };
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-xs font-serif font-bold text-ink-700">#${clue.id}</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-bold ${
+                clue.difficulty === 'Fácil' ? 'bg-sage-light/50 text-sage-dark' :
+                clue.difficulty === 'Medio' ? 'bg-amber-100 text-amber-900' : 'bg-terracotta-light/60 text-terracotta-dark'
+              }">${clue.difficulty}</span>
+              ${isSolved ? '<span class="text-xs text-sage font-bold font-mono">✓ RESUELTO</span>' : ''}
+            </div>
+          </div>
+          <p class="font-serif text-ink-900 text-base line-clamp-2 leading-snug">"${clue.clue}"</p>
+          <div class="mt-3 flex items-center justify-between text-xs text-ink-600 font-mono">
+            <span>${clue.category}</span>
+            <span class="font-bold text-ink-900">(${clue.letterCount} letras)</span>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    /* =========================================================================
+       PESTAÑAS DE NAVEGACIÓN
+       ========================================================================= */
+    function switchTab(tab) {
+      const views = {
+        daily: document.getElementById('viewPlayer'),
+        archive: document.getElementById('viewArchive'),
+        guide: document.getElementById('viewGuide')
+      };
+      const buttons = {
+        daily: document.getElementById('tabBtn-daily'),
+        archive: document.getElementById('tabBtn-archive'),
+        guide: document.getElementById('tabBtn-guide')
+      };
+
+      Object.keys(views).forEach(k => {
+        if (k === tab) {
+          views[k].classList.remove('hidden');
+          buttons[k].className = 'tab-btn px-4 py-2.5 border-b-2 border-ink-900 text-ink-900 font-semibold whitespace-nowrap';
+        } else {
+          views[k].classList.add('hidden');
+          buttons[k].className = 'tab-btn px-4 py-2.5 border-b-2 border-transparent text-ink-600 hover:text-ink-900 whitespace-nowrap';
+        }
+      });
+
+      if (tab === 'archive') {
+        renderArchiveGrid();
+      }
+    }
+
+    // Reiniciar progreso
+    document.getElementById('btnResetProgress').addEventListener('click', () => {
+      const feedback = document.getElementById('feedbackMessage');
+      feedback.innerHTML = `¿Borrar todo el avance guardado? <button id="confirmResetBtn" class="underline font-bold text-terracotta-dark ml-2">Sí, reiniciar</button>`;
+      document.getElementById('confirmResetBtn').onclick = () => {
+        localStorage.removeItem(STORAGE_KEY);
+        solvedClues.clear();
+        revealedLettersMap = {};
+        updateGlobalCounters();
+        renderClue(currentClueIndex);
+        renderArchiveGrid();
+      };
+    });
+
+    /* =========================================================================
+       INICIALIZACIÓN
+       ========================================================================= */
+    window.onload = function() {
+      loadProgress();
+      renderClue(0);
+      document.getElementById('archiveCount').textContent = CRYPTICS.length;
+    };
+  </script>
+</body>
+</html>

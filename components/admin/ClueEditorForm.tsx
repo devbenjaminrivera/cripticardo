@@ -101,7 +101,7 @@ export default function ClueEditorForm({
         {/* Formulario a la izquierda */}
         <form
           onSubmit={handleSubmit}
-          className="bg-parchment-50 border border-ink-300 rounded-lg p-6 space-y-5 shadow-xs"
+          className="bg-parchment-50 border border-ink-300 rounded-lg p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs"
         >
           {/* Aviso de Fecha Automática */}
           <div className="bg-parchment-200/70 border border-parchment-300 rounded p-3 text-xs text-ink-800 flex items-center gap-2">

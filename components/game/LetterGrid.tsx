@@ -29,7 +29,7 @@ export default function LetterGrid({
 
   useEffect(() => {
     inputRefs.current = inputRefs.current.slice(0, length);
-    // Autofocus ONLY once on mount if autoFocus is explicitly true
+    // Autofocus solo una vez al cargar si autoFocus es true y no está resuelto
     if (autoFocus && !hasFocusedRef.current && !isSolved) {
       hasFocusedRef.current = true;
       const firstEmpty = letters.findIndex((l) => !l);
@@ -44,10 +44,10 @@ export default function LetterGrid({
     if (e.key === 'Backspace') {
       e.preventDefault();
       if (letters[index]) {
-        // If current has a letter, clear it
+        // Si la celda actual tiene letra, borrarla
         onChangeLetter(index, '');
       } else if (index > 0) {
-        // Move back and clear previous
+        // Retroceder a la anterior y borrarla
         onChangeLetter(index - 1, '');
         inputRefs.current[index - 1]?.focus();
       }
@@ -68,7 +68,7 @@ export default function LetterGrid({
     const value = e.target.value.toUpperCase();
     const lastChar = value.slice(-1);
 
-    // Solo admitir letras
+    // Solo admitir letras válidas
     if (/^[A-ZÁÉÍÓÚÑ]$/.test(lastChar)) {
       onChangeLetter(index, lastChar);
       if (index < length - 1) {
@@ -82,7 +82,11 @@ export default function LetterGrid({
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     if (isSolved) return;
-    const pasted = e.clipboardData.getData('text').trim().toUpperCase().replace(/[^A-ZÁÉÍÓÚÑ]/g, '');
+    const pasted = e.clipboardData
+      .getData('text')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-ZÁÉÍÓÚÑ]/g, '');
     if (!pasted) return;
 
     const chars = pasted.slice(0, length).split('');
@@ -94,11 +98,31 @@ export default function LetterGrid({
     inputRefs.current[nextIndex]?.focus();
   };
 
+  // Tamaño dinámico adaptable a pantallas móviles
+  const getCellSizeClass = (count: number) => {
+    if (count <= 4) {
+      return 'w-14 h-16 sm:w-16 sm:h-20 text-2xl sm:text-3xl';
+    }
+    if (count <= 7) {
+      return 'w-10 h-13 sm:w-13 sm:h-16 text-xl sm:text-2xl';
+    }
+    if (count <= 9) {
+      return 'w-8 h-11 sm:w-12 sm:h-15 text-lg sm:text-xl';
+    }
+    return 'w-7 h-10 sm:w-10 sm:h-13 text-base sm:text-lg';
+  };
+
+  const getGapClass = (count: number) => {
+    if (count <= 5) return 'gap-2.5 sm:gap-3';
+    if (count <= 8) return 'gap-1.5 sm:gap-2.5';
+    return 'gap-1 sm:gap-2';
+  };
+
   return (
     <div
-      className={`flex flex-wrap items-center gap-2 sm:gap-2.5 my-4 ${
-        isShake ? 'shake-cell' : ''
-      }`}
+      className={`flex flex-wrap justify-center items-center ${getGapClass(
+        length
+      )} my-3 sm:my-5 ${isShake ? 'shake-cell' : ''}`}
     >
       {Array.from({ length }).map((_, i) => {
         const isRevealed = revealedIndices.includes(i);
@@ -112,6 +136,10 @@ export default function LetterGrid({
             }}
             type="text"
             inputMode="text"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="characters"
+            spellCheck={false}
             maxLength={2}
             value={letter}
             disabled={isSolved}
@@ -119,12 +147,14 @@ export default function LetterGrid({
             onChange={(e) => handleInput(i, e)}
             onPaste={handlePaste}
             aria-label={`Letra ${i + 1} de ${length}`}
-            className={`letter-input w-11 h-13 sm:w-13 sm:h-16 text-center font-mono text-xl sm:text-2xl font-bold rounded border shadow-xs select-none uppercase ${
+            className={`letter-input ${getCellSizeClass(
+              length
+            )} text-center font-mono font-bold rounded-md border shadow-2xs select-none uppercase transition-transform active:scale-95 ${
               isSolved
                 ? 'solved bg-sage-light border-sage text-sage-dark'
                 : isRevealed
                 ? 'revealed bg-parchment-200 text-terracotta border-terracotta/40'
-                : 'bg-white/80 border-ink-300 text-ink-900 focus:bg-white focus:border-ink-900'
+                : 'bg-white border-ink-300 text-ink-900 focus:border-ink-900 focus:ring-1 focus:ring-ink-900'
             }`}
           />
         );

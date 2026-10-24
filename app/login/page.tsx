@@ -43,7 +43,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12">
+    <div className="min-h-screen flex flex-col justify-center items-center px-3 sm:px-4 py-8 sm:py-12">
       {/* Botón de regreso */}
       <div className="w-full max-w-md mb-4">
         <Link
@@ -55,7 +55,7 @@ export default function LoginPage() {
         </Link>
       </div>
 
-      <div className="w-full max-w-md bg-parchment-50 border border-ink-300 rounded-lg p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="w-full max-w-md bg-parchment-50 border border-ink-300 rounded-lg p-5 sm:p-8 shadow-xs space-y-5 sm:space-y-6">
         <div className="text-center space-y-1.5 border-b border-ink-300/60 pb-5">
           <div className="inline-flex p-2.5 rounded-full bg-parchment-200 border border-parchment-300 text-ink-900 mb-2">
             <KeyRound className="w-6 h-6 text-terracotta" />

@@ -135,9 +135,9 @@ export default function AdminPage() {
     <div className="min-h-screen flex flex-col bg-parchment-100/60">
       <Navbar />
 
-      <main className="flex-grow max-w-5xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
+      <main className="flex-grow max-w-5xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6">
         {/* Cabecera del Taller */}
-        <div className="bg-parchment-50 border border-ink-300 rounded-lg p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-parchment-50 border border-ink-300 rounded-lg p-4 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase font-mono tracking-widest text-terracotta font-bold">

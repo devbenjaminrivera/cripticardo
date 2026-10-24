@@ -230,12 +230,12 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Tarjeta de la pista */}
       <ClueCard cryptic={cryptic} showDefinition={definitionRevealed} />
 
       {/* Casillas de entrada de letras */}
-      <div className="bg-parchment-50 border border-ink-300 rounded-lg p-6 sm:p-8 shadow-xs">
+      <div className="bg-parchment-50 border border-ink-300 rounded-lg p-3.5 sm:p-7 shadow-xs">
         <div className="flex items-center justify-between pb-2">
           <label className="text-xs uppercase tracking-wider font-semibold text-ink-700">
             Tu Solución ({cryptic.letterCount} casillas)

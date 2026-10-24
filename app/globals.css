@@ -70,3 +70,15 @@ body {
   border-color: #436A55;
   color: #2E4C3C;
 }
+
+/* Optimizaciones para dispositivos móviles */
+button, input, a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@supports (-webkit-touch-callout: none) {
+  input {
+    font-size: 16px;
+  }
+}

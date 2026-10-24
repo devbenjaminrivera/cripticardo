@@ -27,11 +27,11 @@ export default function ClueActions({
   if (isSolved) return null;
 
   return (
-    <div className="space-y-4 pt-2">
-      {/* Feedback message banner */}
+    <div className="space-y-3.5 pt-2">
+      {/* Banner de mensaje de feedback */}
       {feedbackMessage && (
         <div
-          className={`text-sm font-medium py-2 px-3 rounded transition-all flex items-center gap-2 ${
+          className={`text-xs sm:text-sm font-medium py-2.5 px-3 rounded-md transition-all flex items-center gap-2 ${
             feedbackType === 'error'
               ? 'bg-red-50 text-terracotta-dark border border-terracotta/30'
               : feedbackType === 'success'
@@ -43,46 +43,48 @@ export default function ClueActions({
         </div>
       )}
 
-      {/* Button controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-parchment-300">
-        <div className="flex flex-wrap items-center gap-2">
+      {/* Controles de botones móviles */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-parchment-300">
+        {/* Pistas y ayudas */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={onToggleDefinition}
-            className={`text-xs px-3 py-2 rounded font-medium transition-all flex items-center gap-1.5 border ${
+            className={`min-h-[42px] text-xs px-2.5 py-2 rounded font-medium transition-all flex items-center justify-center gap-1.5 border active:scale-95 cursor-pointer ${
               definitionRevealed
                 ? 'bg-sage-light text-sage-dark border-sage/50'
-                : 'bg-parchment-100 hover:bg-parchment-200 text-ink-800 border-ink-300'
+                : 'bg-white hover:bg-parchment-100 text-ink-800 border-ink-300 shadow-2xs'
             }`}
           >
-            <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
-            <span>{definitionRevealed ? 'Ocultar Definición' : 'Pista 1: Separar Definición'}</span>
+            <Lightbulb className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+            <span className="truncate">{definitionRevealed ? 'Ocultar Definición' : 'Pista 1: Definición'}</span>
           </button>
 
           <button
             type="button"
             onClick={onRevealLetter}
-            className="text-xs px-3 py-2 border border-ink-300 hover:border-ink-800 rounded bg-parchment-100 hover:bg-parchment-200 text-ink-800 font-medium transition-all flex items-center gap-1.5"
+            className="min-h-[42px] text-xs px-2.5 py-2 border border-ink-300 hover:border-ink-800 rounded bg-white hover:bg-parchment-100 text-ink-800 font-medium transition-all flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer"
           >
-            <Search className="w-3.5 h-3.5 text-ink-600" />
-            <span>Pista 2: Revelar letra</span>
+            <Search className="w-3.5 h-3.5 text-ink-600 flex-shrink-0" />
+            <span className="truncate">Pista 2: Letra</span>
           </button>
 
           <button
             type="button"
             onClick={onSurrender}
-            className="text-xs px-3 py-2 text-terracotta hover:text-terracotta-dark hover:underline font-medium transition-all flex items-center gap-1"
+            className="col-span-2 sm:col-span-1 min-h-[36px] text-xs py-1.5 px-3 text-terracotta hover:text-terracotta-dark hover:underline font-medium transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
           >
             <EyeOff className="w-3.5 h-3.5" />
-            <span>Rendirse</span>
+            <span>Rendirse y ver solución</span>
           </button>
         </div>
 
+        {/* Botón principal de comprobar (Grande y accesible en móvil) */}
         <div>
           <button
             type="button"
             onClick={onCheckAnswer}
-            className="w-full sm:w-auto px-6 py-2.5 bg-ink-900 hover:bg-ink-800 text-parchment-50 font-serif tracking-wide text-sm font-semibold rounded shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full sm:w-auto min-h-[46px] px-6 py-2.5 bg-ink-900 hover:bg-ink-800 text-parchment-50 font-serif tracking-wide text-sm font-semibold rounded-md shadow-xs transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
           >
             <CheckCircle2 className="w-4 h-4 text-parchment-300" />
             <span>Comprobar Solución</span>

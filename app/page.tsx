@@ -26,7 +26,7 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Navbar onOpenGuide={() => setIsGuideOpen(true)} />
 
-      <main className="flex-grow max-w-4xl w-full mx-auto px-4 py-6 sm:py-8">
+      <main className="flex-grow max-w-3xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-3">
             <div className="w-8 h-8 border-2 border-ink-900 border-t-transparent rounded-full animate-spin"></div>

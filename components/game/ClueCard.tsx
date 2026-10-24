@@ -3,7 +3,7 @@
 import React from 'react';
 import { Cryptic } from '@/lib/types';
 import { formatDatePretty } from '@/lib/dataService';
-import { Calendar, HelpCircle, Sparkles } from 'lucide-react';
+import { Calendar, Sparkles } from 'lucide-react';
 
 interface ClueCardProps {
   cryptic: Cryptic;
@@ -11,11 +11,11 @@ interface ClueCardProps {
 }
 
 export default function ClueCard({ cryptic, showDefinition }: ClueCardProps) {
-  // Render clue text with definition highlighted if hint is active
+  // Renderizar el texto de la pista resaltando la definición si la pista 1 está activa
   const renderClueText = () => {
     if (!showDefinition || !cryptic.defPart) {
       return (
-        <span className="font-serif text-2xl sm:text-3xl text-ink-900 leading-relaxed font-medium">
+        <span className="font-serif text-xl sm:text-2xl md:text-3xl text-ink-900 leading-snug sm:leading-relaxed font-medium">
           {cryptic.clue}
         </span>
       );
@@ -29,7 +29,7 @@ export default function ClueCard({ cryptic, showDefinition }: ClueCardProps) {
 
     if (index === -1) {
       return (
-        <span className="font-serif text-2xl sm:text-3xl text-ink-900 leading-relaxed font-medium">
+        <span className="font-serif text-xl sm:text-2xl md:text-3xl text-ink-900 leading-snug sm:leading-relaxed font-medium">
           {cryptic.clue}
         </span>
       );
@@ -40,11 +40,11 @@ export default function ClueCard({ cryptic, showDefinition }: ClueCardProps) {
     const after = clue.slice(index + def.length);
 
     return (
-      <span className="font-serif text-2xl sm:text-3xl text-ink-900 leading-relaxed font-medium">
+      <span className="font-serif text-xl sm:text-2xl md:text-3xl text-ink-900 leading-snug sm:leading-relaxed font-medium">
         {before}
         <mark
           title="Definición directa"
-          className="bg-sage-light/80 text-sage-dark px-1.5 py-0.5 rounded border-b-2 border-sage font-semibold not-italic"
+          className="bg-sage-light/90 text-sage-dark px-1.5 py-0.5 rounded border-b-2 border-sage font-semibold not-italic shadow-2xs"
         >
           {highlighted}
         </mark>
@@ -67,20 +67,20 @@ export default function ClueCard({ cryptic, showDefinition }: ClueCardProps) {
   };
 
   return (
-    <div className="bg-parchment-50 border border-ink-300 rounded-lg p-6 sm:p-8 shadow-xs relative overflow-hidden">
-      {/* Editorial watermark */}
-      <div className="absolute -right-6 -bottom-8 opacity-5 font-serif text-9xl select-none pointer-events-none">
+    <div className="bg-parchment-50 border border-ink-300 rounded-lg p-4 sm:p-7 shadow-xs relative overflow-hidden">
+      {/* Marca de agua editorial */}
+      <div className="absolute -right-4 -bottom-6 sm:-right-6 sm:-bottom-8 opacity-5 font-serif text-7xl sm:text-9xl select-none pointer-events-none">
         ¶
       </div>
 
-      {/* Top Metadata Row */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-6 border-b border-ink-300/60">
+      {/* Fila superior de metadatos */}
+      <div className="flex items-center justify-between gap-2 pb-3 mb-4 sm:mb-6 border-b border-ink-300/60">
         <div className="flex items-center gap-2">
-          <span className="font-serif text-lg font-bold text-ink-900">
+          <span className="font-serif text-base sm:text-lg font-bold text-ink-900">
             Juego #{cryptic.clueNumber}
           </span>
           <span
-            className={`text-xs uppercase font-mono font-bold px-2 py-0.5 rounded border ${getDifficultyBadge(
+            className={`text-[10px] sm:text-xs uppercase font-mono font-bold px-2 py-0.5 rounded border ${getDifficultyBadge(
               cryptic.difficulty
             )}`}
           >
@@ -88,22 +88,22 @@ export default function ClueCard({ cryptic, showDefinition }: ClueCardProps) {
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-ink-600 font-medium">
-          <Calendar className="w-3.5 h-3.5 text-ink-600" />
+        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-ink-600 font-medium">
+          <Calendar className="w-3.5 h-3.5 text-ink-600 flex-shrink-0" />
           <span className="capitalize">{formatDatePretty(cryptic.scheduledDate)}</span>
         </div>
       </div>
 
-      {/* Clue Text */}
-      <div className="mb-6 max-w-2xl">
-        <span className="text-xs font-mono uppercase text-ink-600 tracking-wider block mb-2 font-medium">
+      {/* Enunciado */}
+      <div className="mb-2">
+        <span className="text-[10px] sm:text-xs font-mono uppercase text-ink-600 tracking-wider block mb-1.5 font-medium">
           Enunciado ({cryptic.letterCount} letras)
         </span>
         <div className="py-1">{renderClueText()}</div>
 
         {showDefinition && (
-          <p className="mt-3 text-xs text-sage-dark font-medium flex items-center gap-1.5 bg-sage-light/40 p-2 rounded border border-sage/20">
-            <Sparkles className="w-3.5 h-3.5 text-sage" />
+          <p className="mt-3 text-xs text-sage-dark font-medium flex items-start gap-1.5 bg-sage-light/40 p-2.5 rounded border border-sage/20 leading-relaxed">
+            <Sparkles className="w-3.5 h-3.5 text-sage flex-shrink-0 mt-0.5" />
             <span>
               <strong>Pista activa:</strong> La parte resaltada en verde es la{' '}
               <em>definición directa</em> de la palabra. El resto es el mecanismo de construcción.

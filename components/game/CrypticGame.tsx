@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { Cryptic } from '@/lib/types';
 import LetterGrid from './LetterGrid';
 import ClueCard from './ClueCard';
@@ -241,17 +242,25 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     <div className="space-y-4 sm:space-y-6">
       {/* Aviso amigable si ya lo completó previamente hoy pero desea resolverlo de nuevo */}
       {hasPreviouslySolved && !isSolved && (
-        <div className="bg-sage-light/35 border border-sage/30 rounded-lg p-3 sm:p-3.5 flex items-center justify-between flex-wrap gap-2 text-xs text-sage-dark shadow-2xs">
+        <div className="bg-sage-light/35 border border-sage/30 rounded-lg p-2.5 sm:p-3.5 flex items-center justify-between flex-wrap gap-2 text-xs text-sage-dark shadow-2xs">
           <span className="font-medium flex items-center gap-1.5">
-            <span>✨ Ya resolviste este enigma hoy. ¡Puedes resolverlo de nuevo las veces que quieras!</span>
+            <span>✨ Ya resolviste este enigma hoy. ¡Puedes resolverlo de nuevo!</span>
           </span>
-          <button
-            type="button"
-            onClick={() => setShowPreviousSolution((prev) => !prev)}
-            className="underline hover:text-sage-dark font-semibold cursor-pointer text-xs"
-          >
-            {showPreviousSolution ? 'Ocultar anatomía' : 'Ver anatomía previa'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowPreviousSolution((prev) => !prev)}
+              className="underline hover:text-sage-dark font-semibold cursor-pointer text-xs"
+            >
+              {showPreviousSolution ? 'Ocultar anatomía' : 'Ver anatomía previa'}
+            </button>
+            <Link
+              href="/archivo"
+              className="text-terracotta hover:text-terracotta-dark font-semibold underline text-xs"
+            >
+              Mi Archivo →
+            </Link>
+          </div>
         </div>
       )}
 

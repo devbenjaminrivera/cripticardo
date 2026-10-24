@@ -7,7 +7,7 @@ import GuideModal from '@/components/guide/GuideModal';
 import { fetchDailyCrypticAsync } from '@/lib/dataService';
 import { Cryptic } from '@/lib/types';
 import Link from 'next/link';
-import { BookOpen, Archive } from 'lucide-react';
+import { BookOpen, Archive, KeyRound } from 'lucide-react';
 
 export default function HomePage() {
   const [cryptic, setCryptic] = useState<Cryptic | null>(null);
@@ -55,7 +55,7 @@ export default function HomePage() {
           <p className="font-serif">
             Cripticardo — Enigmas verbales diarios creados por <strong>Daniel Fajardo</strong>.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <Link
               href="/archivo"
               className="hover:text-ink-900 underline flex items-center gap-1 cursor-pointer"
@@ -70,6 +70,14 @@ export default function HomePage() {
               <BookOpen className="w-3.5 h-3.5" />
               <span>Guía de Mecanismos</span>
             </button>
+            <Link
+              href="/login"
+              className="hover:text-ink-900 opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
+              title="Acceso panel de creador"
+            >
+              <KeyRound className="w-3 h-3" />
+              <span>Editorial</span>
+            </Link>
           </div>
         </div>
       </footer>

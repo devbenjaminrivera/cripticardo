@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Cryptic } from '@/lib/types';
-import { Check, Copy, Share2, Trophy, Clock, Lightbulb, RotateCcw } from 'lucide-react';
+import { Check, Copy, Share2, Trophy, Clock, Lightbulb, RotateCcw, Archive } from 'lucide-react';
 import { generateShareText } from '@/lib/playerStorage';
 
 interface AnatomyBreakdownProps {
@@ -170,8 +171,17 @@ export default function AnatomyBreakdown({
         </div>
       </div>
 
-      <div className="pt-2 text-[11px] text-ink-600 text-center sm:text-left italic">
-        Siguiente enigma mañana a las 00:00 (hora de Santiago de Chile).
+      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-ink-600 border-t border-parchment-300/80">
+        <span className="italic text-center sm:text-left">
+          Siguiente enigma mañana a las 00:00 (hora de Santiago de Chile).
+        </span>
+        <Link
+          href="/archivo"
+          className="text-terracotta hover:text-terracotta-dark font-medium underline inline-flex items-center gap-1"
+        >
+          <Archive className="w-3 h-3" />
+          <span>Ver mis crípticos resueltos →</span>
+        </Link>
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import {
   Trophy,
   BookOpen,
   Sparkles,
+  KeyRound,
 } from 'lucide-react';
 
 export default function ArchivePage() {
@@ -239,13 +240,23 @@ export default function ArchivePage() {
           <p className="font-serif">
             Cripticardo — Enigmas verbales diarios creados por <strong>Daniel Fajardo</strong>.
           </p>
-          <button
-            onClick={() => setIsGuideOpen(true)}
-            className="hover:text-ink-900 underline flex items-center gap-1 cursor-pointer"
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Guía de Mecanismos</span>
-          </button>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <button
+              onClick={() => setIsGuideOpen(true)}
+              className="hover:text-ink-900 underline flex items-center gap-1 cursor-pointer"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Guía de Mecanismos</span>
+            </button>
+            <Link
+              href="/login"
+              className="hover:text-ink-900 opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
+              title="Acceso panel de creador"
+            >
+              <KeyRound className="w-3 h-3" />
+              <span>Editorial</span>
+            </Link>
+          </div>
         </div>
       </footer>
 

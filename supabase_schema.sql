@@ -3,10 +3,14 @@
 -- Copia y pega todo este contenido directamente en el SQL Editor de Supabase
 -- =========================================================================
 
--- 1. Habilitar extensión UUID
+-- 1. Habilitar extensiones necesarias (UUID y pgcrypto para encriptación de contraseñas)
 create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
 
--- 2. Crear tabla principal de crípticos
+-- =========================================================================
+-- SECCIÓN A: TABLA DE CRÍPTICOS
+-- =========================================================================
+
 create table if not exists public.cryptics (
   id uuid primary key default gen_random_uuid(),
   clue_number serial,
@@ -24,28 +28,25 @@ create table if not exists public.cryptics (
   updated_at timestamp with time zone default now()
 );
 
--- 3. Crear índices para consultas optimizadas por fecha y estado
+-- Índices para consultas optimizadas por fecha y estado
 create index if not exists idx_cryptics_scheduled_date on public.cryptics (scheduled_date);
 create index if not exists idx_cryptics_status on public.cryptics (status);
 
--- 4. Habilitar Row Level Security (RLS)
+-- Habilitar Row Level Security (RLS) en crípticos
 alter table public.cryptics enable row level security;
 
--- 5. Eliminar políticas previas si ya existían (para evitar duplicados al reejecutar)
+-- Políticas de acceso para cryptics
 drop policy if exists "Permitir acceso completo a la aplicación" on public.cryptics;
 drop policy if exists "Público solo puede ver crípticos de hoy o anteriores en Chile" on public.cryptics;
 drop policy if exists "Autor autenticado tiene control total" on public.cryptics;
 
--- 6. POLÍTICA DE ACCESO:
--- Permite lectura, creación y edición directa para que el panel de administración funcione
--- de inmediato con usuario y contraseña sin requerir configuración de correos en Supabase Auth.
 create policy "Permitir acceso completo a la aplicación"
 on public.cryptics
 for all
 using (true)
 with check (true);
 
--- 7. Función y trigger para actualizar automáticamente el campo updated_at
+-- Trigger para updated_at automático
 create or replace function public.handle_updated_at()
 returns trigger as $$
 begin
@@ -61,10 +62,64 @@ for each row
 execute function public.handle_updated_at();
 
 -- =========================================================================
--- (OPCIONAL) CARGA INICIAL: 3 Crípticos del manual de Daniel Fajardo
--- Descomenta este bloque si deseas empezar con 3 crípticos ya cargados
+-- SECCIÓN B: AUTENTICACIÓN SEGURA DE ADMINISTRADORES
 -- =========================================================================
-/*
+
+-- 1. Tabla de administradores con contraseñas encriptadas con Blowfish / Bcrypt
+create table if not exists public.admin_users (
+  id uuid primary key default gen_random_uuid(),
+  username text unique not null,
+  password_hash text not null,
+  role text default 'admin',
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+-- 2. RLS estricto: nadie puede leer ni modificar la tabla directamente desde el cliente web
+alter table public.admin_users enable row level security;
+
+-- 3. Función segura (SECURITY DEFINER) para verificar usuario y contraseña
+-- Compara el hash bcrypt sin exponer nunca la contraseña ni los registros al cliente
+create or replace function public.verify_admin_credentials(p_username text, p_password text)
+returns boolean
+language plpgsql
+security definer
+as $$
+declare
+  v_match boolean;
+begin
+  select (password_hash = crypt(p_password, password_hash))
+  into v_match
+  from public.admin_users
+  where lower(username) = lower(p_username);
+
+  return coalesce(v_match, false);
+end;
+$$;
+
+-- 4. Función utilitaria para crear o actualizar administradores con hash automático
+create or replace function public.create_or_update_admin(p_username text, p_password text)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  insert into public.admin_users (username, password_hash)
+  values (lower(trim(p_username)), crypt(trim(p_password), gen_salt('bf', 10)))
+  on conflict (username) do update
+  set password_hash = crypt(trim(p_password), gen_salt('bf', 10)),
+      updated_at = now();
+end;
+$$;
+
+-- 5. Crear usuario administrador inicial
+-- Puedes cambiar 'admin' y 'cripticardo2026' por las credenciales que prefieras:
+select public.create_or_update_admin('admin', 'cripticardo2026');
+
+-- =========================================================================
+-- SECCIÓN C: (OPCIONAL) 3 CRÍPTICOS DEL MANUAL DE DANIEL FAJARDO
+-- (Si ya ejecutaste esto anteriormente, no duplicará por el 'on conflict')
+-- =========================================================================
 insert into public.cryptics (
   scheduled_date, clue, answer, letter_count, difficulty, category, def_part, mechanism_part, mechanism_text, status
 ) values
@@ -105,4 +160,3 @@ insert into public.cryptics (
   'published'
 )
 on conflict (scheduled_date) do nothing;
-*/

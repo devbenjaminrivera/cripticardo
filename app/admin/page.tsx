@@ -32,31 +32,69 @@ export default function AdminPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-  // Comprobar autenticación
+  // Comprobar autenticación en el servidor
   useEffect(() => {
-    const auth = localStorage.getItem('cripticardo_admin_auth');
-    if (!auth) {
-      router.push('/login');
-    } else {
-      setIsAuthenticated(true);
-      loadCryptics();
-    }
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (!res.ok) {
+          localStorage.removeItem('cripticardo_admin_auth');
+          localStorage.removeItem('cripticardo_admin_user');
+          router.push('/login');
+          return;
+        }
+        setIsAuthenticated(true);
+        loadCryptics();
+      } catch {
+        router.push('/login');
+      }
+    };
+    checkAuth();
   }, [router]);
 
   const loadCryptics = async () => {
+    try {
+      const res = await fetch('/api/admin/cryptics');
+      if (res.ok) {
+        const data = await res.json();
+        setCryptics(data);
+        return;
+      }
+    } catch (e) {
+      console.warn('Error cargando desde API admin:', e);
+    }
     const list = await fetchAllCrypticsAsync();
-    // Ordenar por fecha programada descendente
     list.sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
     setCryptics(list);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('cripticardo_admin_auth');
-    localStorage.removeItem('cripticardo_admin_user');
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } finally {
+      localStorage.removeItem('cripticardo_admin_auth');
+      localStorage.removeItem('cripticardo_admin_user');
+      router.push('/login');
+    }
   };
 
   const handleSave = async (data: Omit<Cryptic, 'id' | 'clueNumber'> & { id?: string }) => {
+    try {
+      const res = await fetch('/api/admin/cryptics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        await loadCryptics();
+        setIsCreating(false);
+        setEditingCryptic(null);
+        return;
+      }
+    } catch (e) {
+      console.warn('Error al guardar en API admin:', e);
+    }
+
     await saveCrypticAsync(data);
     await loadCryptics();
     setIsCreating(false);
@@ -65,6 +103,18 @@ export default function AdminPage() {
 
   const handleDelete = async (id: string, clueNum: number) => {
     if (window.confirm(`¿Estás seguro de eliminar el críptico #${clueNum}?`)) {
+      try {
+        const res = await fetch(`/api/admin/cryptics?id=${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+        });
+        if (res.ok) {
+          await loadCryptics();
+          return;
+        }
+      } catch (e) {
+        console.warn('Error eliminando en API admin:', e);
+      }
+
       await deleteCrypticAsync(id);
       await loadCryptics();
     }

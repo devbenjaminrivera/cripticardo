@@ -12,23 +12,34 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      if (username.trim() && password.trim()) {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('cripticardo_admin_auth', 'true');
-          localStorage.setItem('cripticardo_admin_user', username.trim());
+          localStorage.setItem('cripticardo_admin_user', data.username || username.trim());
         }
         router.push('/admin');
       } else {
-        setError('Por favor ingresa usuario y contraseña válidos.');
+        setError(data.error || 'Credenciales inválidas. Verifica tu usuario y contraseña.');
         setLoading(false);
       }
-    }, 400);
+    } catch {
+      setError('Error de conexión al intentar iniciar sesión.');
+      setLoading(false);
+    }
   };
 
   return (

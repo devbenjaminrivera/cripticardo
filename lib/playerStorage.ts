@@ -44,7 +44,7 @@ export function generateShareText(
   const timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 
   if (surrendered) {
-    return `Cripticardo #${clueNumber} 🧩\n` +
+    return `Cripticardo Juego #${clueNumber} 🧩\n` +
       `📅 ${dateStr}\n` +
       `📖 Solución vista con ayuda\n` +
       `https://cripticardo.vercel.app`;
@@ -53,7 +53,7 @@ export function generateShareText(
   const greenBoxes = '🟩'.repeat(letterCount);
   const hintText = hintsUsed === 0 ? 'Sin pistas 🧠' : `${hintsUsed} ${hintsUsed === 1 ? 'pista' : 'pistas'} 💡`;
 
-  return `Cripticardo #${clueNumber} 🧩\n` +
+  return `Cripticardo Juego #${clueNumber} 🧩\n` +
     `📅 ${dateStr}\n` +
     `⏱️ ${timeFormatted} | ${hintText}\n` +
     `${greenBoxes}\n` +

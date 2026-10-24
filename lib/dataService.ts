@@ -279,11 +279,22 @@ export async function saveCrypticAsync(
           return updated;
         }
       } else {
-        // Insertar nuevo
+        // Calcular el siguiente número de juego correlativo
+        const { data: maxRow } = await supabase
+          .from('cryptics')
+          .select('clue_number')
+          .order('clue_number', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const nextClueNumber = maxRow?.clue_number ? maxRow.clue_number + 1 : 1;
+
+        // Insertar nuevo con el número calculado
         const { data, error } = await supabase
           .from('cryptics')
           .insert({
             scheduled_date: newClue.scheduledDate,
+            clue_number: nextClueNumber,
             clue: newClue.clue.trim(),
             answer: cleanAnswer,
             letter_count: letterCount,

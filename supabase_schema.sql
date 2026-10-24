@@ -61,6 +61,23 @@ before update on public.cryptics
 for each row
 execute function public.handle_updated_at();
 
+-- Trigger para numeración correlativa automática (evita saltos al eliminar crípticos)
+create or replace function public.set_next_clue_number()
+returns trigger as $$
+begin
+  if new.clue_number is null or new.clue_number <= 0 then
+    select coalesce(max(clue_number), 0) + 1 into new.clue_number from public.cryptics;
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_set_next_clue_number on public.cryptics;
+create trigger trg_set_next_clue_number
+before insert on public.cryptics
+for each row
+execute function public.set_next_clue_number();
+
 -- =========================================================================
 -- SECCIÓN B: AUTENTICACIÓN SEGURA DE ADMINISTRADORES
 -- =========================================================================

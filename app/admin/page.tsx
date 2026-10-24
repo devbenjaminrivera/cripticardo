@@ -181,25 +181,25 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white/80 p-4 rounded-lg border border-ink-300 shadow-2xs">
               <span className="text-xs uppercase font-mono tracking-wider text-ink-600 block">
-                Total de Pistas
+                Total de Juegos
               </span>
               <span className="text-serif text-2xl font-bold text-ink-900">
                 {cryptics.length}
               </span>
               <span className="text-[11px] text-ink-600 block mt-0.5">
-                Programadas automáticamente
+                Programados automáticamente
               </span>
             </div>
 
             <div className="bg-white/80 p-4 rounded-lg border border-ink-300 shadow-2xs">
               <span className="text-xs uppercase font-mono tracking-wider text-ink-600 block">
-                Pista del Día de Hoy
+                Juego del Día de Hoy
               </span>
               <span className="font-serif text-base font-bold text-ink-900 line-clamp-1">
-                {todayCryptic ? `Pista #${todayCryptic.clueNumber}: ${todayCryptic.answer}` : 'Ninguna para hoy'}
+                {todayCryptic ? `Juego #${todayCryptic.clueNumber}: ${todayCryptic.answer}` : 'Ninguno para hoy'}
               </span>
               <span className="text-[11px] text-sage-dark block mt-0.5 font-medium">
-                {todayCryptic ? '✓ Activa y visible al público' : 'Se mostrará la primera disponible'}
+                {todayCryptic ? '✓ Activo y visible al público' : 'Se mostrará el primero disponible'}
               </span>
             </div>
 
@@ -281,7 +281,7 @@ export default function AdminPage() {
                     <div className="space-y-1.5 max-w-2xl">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-serif font-bold text-ink-900 text-base">
-                          Pista #{item.clueNumber}
+                          Juego #{item.clueNumber}
                         </span>
                         {isToday && (
                           <span className="text-[10px] font-mono font-bold uppercase bg-sage text-parchment-50 px-2 py-0.5 rounded shadow-2xs">

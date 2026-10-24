@@ -93,7 +93,7 @@ export default function ClueEditorForm({
         </button>
 
         <h2 className="font-serif text-xl font-bold text-ink-900">
-          {initialData ? `Editar Pista #${initialData.clueNumber}` : 'Nuevo Críptico'}
+          {initialData ? `Editar Juego #${initialData.clueNumber}` : 'Nuevo Críptico'}
         </h2>
       </div>
 

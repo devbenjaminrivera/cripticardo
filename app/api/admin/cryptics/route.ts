@@ -75,10 +75,23 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(mapRowToCryptic(data));
     } else {
-      // Insertar nuevo
+      // Calcular el siguiente número de juego correlativo
+      const { data: maxRow } = await supabase
+        .from('cryptics')
+        .select('clue_number')
+        .order('clue_number', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const nextClueNumber = maxRow?.clue_number ? maxRow.clue_number + 1 : 1;
+
+      // Insertar nuevo con el número de juego calculado
       const { data, error } = await supabase
         .from('cryptics')
-        .insert(rowData)
+        .insert({
+          ...rowData,
+          clue_number: nextClueNumber,
+        })
         .select()
         .single();
 

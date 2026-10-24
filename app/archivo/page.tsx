@@ -107,7 +107,7 @@ export default function ArchivePage() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-serif font-bold text-ink-900">
-                        Pista #{item.clueNumber}
+                        Juego #{item.clueNumber}
                       </span>
                       <div className="flex items-center gap-2">
                         {isCompleted && (

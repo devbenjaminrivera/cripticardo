@@ -78,7 +78,7 @@ export default function Navbar({ onOpenGuide, solvedCount }: NavbarProps) {
                   : 'border-transparent text-ink-600 hover:text-ink-900'
               }`}
             >
-              Pista de Hoy
+              Juego de Hoy
             </Link>
 
             <Link

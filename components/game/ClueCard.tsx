@@ -77,7 +77,7 @@ export default function ClueCard({ cryptic, showDefinition }: ClueCardProps) {
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-6 border-b border-ink-300/60">
         <div className="flex items-center gap-2">
           <span className="font-serif text-lg font-bold text-ink-900">
-            Pista #{cryptic.clueNumber}
+            Juego #{cryptic.clueNumber}
           </span>
           <span
             className={`text-xs uppercase font-mono font-bold px-2 py-0.5 rounded border ${getDifficultyBadge(

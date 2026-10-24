@@ -27,6 +27,11 @@
   --font-mono: var(--font-mono), monospace;
 }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background-color: #F9F5EC;
   color: #1C1917;

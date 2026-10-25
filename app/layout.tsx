@@ -33,6 +33,10 @@ export const metadata: Metadata = {
   description: "Resuelve el enigma verbal del día. Pistas crípticas, juegos de palabras y acertijos con anatomía explicada paso a paso.",
   authors: [{ name: "Daniel Fajardo" }],
   creator: "Daniel Fajardo",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

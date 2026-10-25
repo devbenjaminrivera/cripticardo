@@ -1,38 +1,27 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, KeyRound, Archive, ArrowLeft } from 'lucide-react';
-import { getSolvedCount } from '@/lib/playerStorage';
+import { BookOpen, KeyRound } from 'lucide-react';
 
 interface NavbarProps {
   onOpenGuide?: () => void;
   solvedCount?: number;
 }
 
-export default function Navbar({ onOpenGuide, solvedCount: propSolvedCount }: NavbarProps) {
+export default function Navbar({ onOpenGuide }: NavbarProps) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith('/admin');
-  const isArchive = pathname === '/archivo';
-  const [solvedCount, setSolvedCount] = useState<number | undefined>(propSolvedCount);
-
-  useEffect(() => {
-    if (typeof propSolvedCount === 'number') {
-      setSolvedCount(propSolvedCount);
-    } else {
-      setSolvedCount(getSolvedCount());
-    }
-  }, [propSolvedCount]);
 
   return (
     <header className="w-full border-b border-ink-300 bg-parchment-100/95 backdrop-blur-md sticky top-0 z-30 shadow-xs">
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2">
-        {/* Lado izquierdo: Título y Autor (Nunca truncado) */}
+        {/* Lado izquierdo: Título y Autor */}
         <div className="flex-shrink-0">
           <div className="hidden sm:flex items-center gap-2 mb-0.5">
             <span className="text-[10px] tracking-widest uppercase font-semibold text-ink-600 block">
-              Cuaderno de Enigmas Verbales
+              Enigmas Verbales de Música Antigua
             </span>
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-terracotta"></span>
             <span className="text-[10px] font-mono font-medium text-ink-700">
@@ -51,60 +40,39 @@ export default function Navbar({ onOpenGuide, solvedCount: propSolvedCount }: Na
 
           {/* Subtítulo visible en móvil */}
           <div className="sm:hidden text-[10px] font-mono text-ink-600 leading-tight">
-            Por Daniel Fajardo
+           Por Daniel Fajardo
           </div>
         </div>
 
         {/* Lado derecho: Acciones optimizadas para móvil */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
-          {/* Botón de Archivo o Volver al Juego de hoy */}
-          {!isAdmin && (
-            isArchive ? (
-              <Link
-                href="/"
-                className="flex items-center gap-1 text-xs text-ink-800 hover:text-ink-900 font-medium py-1.5 px-2.5 rounded border border-ink-300 hover:border-ink-800 bg-white hover:bg-parchment-50 transition-colors flex-shrink-0 active:scale-95 shadow-2xs"
-                title="Volver al juego de hoy"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 text-ink-700 flex-shrink-0" />
-                <span className="text-xs font-semibold">Juego de hoy</span>
-              </Link>
-            ) : (
-              <Link
-                href="/archivo"
-                className="flex items-center gap-1.5 text-xs text-ink-800 hover:text-ink-900 font-medium py-1.5 px-2 sm:px-2.5 rounded border border-ink-300 hover:border-ink-800 bg-white hover:bg-parchment-50 transition-colors flex-shrink-0 active:scale-95 shadow-2xs"
-                title="Ver archivo de crípticos resueltos"
-              >
-                <Archive className="w-3.5 h-3.5 text-ink-700 flex-shrink-0" />
-                <span className="text-xs font-semibold">Archivo</span>
-                {typeof solvedCount === 'number' && solvedCount > 0 && (
-                  <span className="bg-sage-dark text-parchment-50 text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold">
-                    {solvedCount}
-                  </span>
-                )}
-              </Link>
-            )
-          )}
-
-          {/* Botón ¿Cómo jugar? (Icono en móvil, con texto en desktop) */}
+          {/* Botón ¿Cómo jugar? */}
           {onOpenGuide && !isAdmin && (
             <button
               onClick={onOpenGuide}
-              className="flex items-center gap-1.5 text-xs text-terracotta hover:text-terracotta-dark font-medium p-1.5 sm:px-2.5 sm:py-1.5 rounded border border-terracotta/30 bg-terracotta-light/25 hover:bg-terracotta-light/40 transition-colors cursor-pointer active:scale-95 flex-shrink-0"
+              className="flex items-center gap-1 text-xs text-terracotta hover:text-terracotta-dark font-medium py-1.5 px-2 sm:px-2.5 rounded border border-terracotta/30 bg-terracotta-light/25 hover:bg-terracotta-light/40 transition-colors cursor-pointer active:scale-95 flex-shrink-0"
               title="Manual: Cómo resolver un críptico"
-              aria-label="¿Cómo jugar?"
             >
-              <BookOpen className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden sm:inline text-xs font-semibold">¿Cómo jugar?</span>
+              <BookOpen className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="text-[11px] sm:text-xs">¿Cómo jugar?</span>
             </button>
           )}
 
-          {/* Si es vista de administración, botón para salir al juego */}
-          {isAdmin && (
+          {isAdmin ? (
             <Link
               href="/"
               className="text-xs font-medium text-ink-700 hover:text-ink-900 bg-parchment-200 px-2.5 py-1.5 rounded border border-ink-300 transition-colors flex-shrink-0"
             >
               ← Volver
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              title="Ingresar al panel"
+              className="text-xs flex items-center gap-1 text-ink-700 hover:text-ink-900 py-1.5 px-2 sm:px-2.5 rounded border border-ink-300 hover:border-ink-700 bg-white/70 hover:bg-white transition-colors font-medium flex-shrink-0 active:scale-95 shadow-2xs"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-ink-600 flex-shrink-0" />
+              <span className="text-[11px] sm:text-xs">Ingresar</span>
             </Link>
           )}
         </div>

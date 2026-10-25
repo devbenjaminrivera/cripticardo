@@ -7,7 +7,8 @@ import GuideModal from '@/components/guide/GuideModal';
 import { fetchDailyCrypticAsync } from '@/lib/dataService';
 import { Cryptic } from '@/lib/types';
 import Link from 'next/link';
-import { BookOpen, Archive, KeyRound } from 'lucide-react';
+import { BookOpen, KeyRound } from 'lucide-react';
+import { SocialButtons } from '@/components/ui/SocialLinks';
 
 export default function HomePage() {
   const [cryptic, setCryptic] = useState<Cryptic | null>(null);
@@ -49,30 +50,28 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Footer editorial */}
-      <footer className="border-t border-ink-300/60 bg-parchment-100/60 py-6 text-center text-xs text-ink-600">
-        <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="font-serif">
-            Cripticardo — Enigmas verbales diarios creados por <strong>Daniel Fajardo</strong>.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-            <Link
-              href="/archivo"
-              className="hover:text-ink-900 underline flex items-center gap-1 cursor-pointer"
-            >
-              <Archive className="w-3.5 h-3.5" />
-              <span>Mi Archivo</span>
-            </Link>
+      {/* Footer editorial con redes de Daniel Fajardo */}
+      <footer className="border-t border-ink-300/60 bg-parchment-100/80 py-5 sm:py-6 text-xs text-ink-600">
+        <div className="max-w-3xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
+            <span className="font-serif">
+              Crípticos de música antigua por <strong>Daniel Fajardo</strong>:
+            </span>
+            <SocialButtons compact={true} />
+          </div>
+
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setIsGuideOpen(true)}
               className="hover:text-ink-900 underline flex items-center gap-1 cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Guía de Mecanismos</span>
+              <span>Guía</span>
             </button>
+            <span className="text-ink-300">•</span>
             <Link
               href="/login"
-              className="hover:text-ink-900 opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
+              className="hover:text-ink-900 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
               title="Acceso panel de creador"
             >
               <KeyRound className="w-3 h-3" />

@@ -123,7 +123,7 @@ export default function AdminPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="font-serif text-sm text-ink-600">Verificando credenciales...</p>
+        <p className="text-sm text-ink-600">Verificando credenciales...</p>
       </div>
     );
   }
@@ -146,7 +146,7 @@ export default function AdminPage() {
               <span className="text-ink-400">•</span>
               <span className="text-[10px] font-sans text-ink-600">Edición y Programación</span>
             </div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-ink-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink-900">
               Panel de Administración
             </h1>
             <p className="text-xs sm:text-sm text-ink-600 mt-1">
@@ -158,7 +158,7 @@ export default function AdminPage() {
             {!isCreating && !editingCryptic && (
               <button
                 onClick={() => setIsCreating(true)}
-                className="px-4 py-2 bg-ink-900 hover:bg-ink-800 text-parchment-50 font-serif text-xs font-semibold rounded shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 bg-ink-900 hover:bg-ink-800 text-parchment-50 text-xs font-semibold rounded shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4 text-parchment-300" />
                 <span>Nuevo Críptico</span>
@@ -195,7 +195,7 @@ export default function AdminPage() {
               <span className="text-xs uppercase font-mono tracking-wider text-ink-600 block">
                 Juego del Día de Hoy
               </span>
-              <span className="font-serif text-base font-bold text-ink-900 line-clamp-1">
+              <span className="text-base font-bold text-ink-900 line-clamp-1">
                 {todayCryptic ? `Juego #${todayCryptic.clueNumber}: ${todayCryptic.answer}` : 'Ninguno para hoy'}
               </span>
               <span className="text-[11px] text-sage-dark block mt-0.5 font-medium">
@@ -210,7 +210,7 @@ export default function AdminPage() {
               <Link
                 href="/"
                 target="_blank"
-                className="font-serif text-sm font-semibold text-terracotta hover:underline inline-flex items-center gap-1 mt-1"
+                className="text-sm font-semibold text-terracotta hover:underline inline-flex items-center gap-1 mt-1"
               >
                 <span>Probar portada pública</span>
                 <Eye className="w-3.5 h-3.5" />
@@ -238,7 +238,7 @@ export default function AdminPage() {
           /* Lista de Crípticos Programados */
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-serif text-lg font-bold text-ink-900">
+              <h2 className="text-lg font-bold text-ink-900">
                 Calendario de Enigmas Programados ({cryptics.length})
               </h2>
             </div>
@@ -248,7 +248,7 @@ export default function AdminPage() {
                 <div className="inline-flex p-3 rounded-full bg-parchment-200 border border-parchment-300 text-ink-700">
                   <BookOpen className="w-6 h-6 text-terracotta" />
                 </div>
-                <h3 className="font-serif text-lg font-bold text-ink-900">
+                <h3 className="text-lg font-bold text-ink-900">
                   Aún no has creado ningún críptico
                 </h3>
                 <p className="text-xs sm:text-sm text-ink-600 max-w-md mx-auto">
@@ -257,7 +257,7 @@ export default function AdminPage() {
                 <div>
                   <button
                     onClick={() => setIsCreating(true)}
-                    className="px-5 py-2.5 bg-ink-900 hover:bg-ink-800 text-parchment-50 font-serif text-xs font-semibold rounded shadow-xs transition-colors inline-flex items-center gap-2 cursor-pointer"
+                    className="px-5 py-2.5 bg-ink-900 hover:bg-ink-800 text-parchment-50 text-xs font-semibold rounded shadow-xs transition-colors inline-flex items-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-4 h-4 text-parchment-300" />
                     <span>Crear mi primer críptico</span>
@@ -280,7 +280,7 @@ export default function AdminPage() {
                   >
                     <div className="space-y-1.5 max-w-2xl">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-serif font-bold text-ink-900 text-base">
+                        <span className="font-bold text-ink-900 text-base">
                           Juego #{item.clueNumber}
                         </span>
                         {isToday && (
@@ -289,7 +289,7 @@ export default function AdminPage() {
                           </span>
                         )}
                         <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 rounded border border-ink-300 text-ink-900">
-                          {item.answer} ({item.letterCount})
+                          {item.answer} ({item.answer.trim().includes(' ') ? `${item.letterCount}: ${item.answer.trim().split(/\s+/).map((w) => w.length).join(', ')}` : item.letterCount})
                         </span>
                         <span className="text-[11px] font-mono uppercase text-ink-600 bg-parchment-200 px-2 py-0.5 rounded">
                           {item.difficulty}

@@ -4,6 +4,10 @@ export interface DailyProgress {
   userLetters: string[];
   revealedIndices: number[];
   definitionRevealed: boolean;
+  mechanismRevealed?: boolean;
+  hint1Used?: boolean;
+  hint2Used?: boolean;
+  hint3Used?: boolean;
   timeSpentSeconds: number;
   solvedAt?: string;
   surrendered?: boolean;
@@ -60,6 +64,10 @@ export function resetDailyProgress(crypticId: string): void {
         userLetters: [],
         revealedIndices: [],
         definitionRevealed: false,
+        mechanismRevealed: false,
+        hint1Used: false,
+        hint2Used: false,
+        hint3Used: false,
         timeSpentSeconds: 0,
         completedBefore: Boolean(existing.completedBefore || existing.solved),
       };

@@ -74,11 +74,11 @@ export default function AnatomyBreakdown({
       <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-parchment-300">
         <div className="flex items-center gap-2">
           {surrendered ? (
-            <span className="text-terracotta-dark font-serif font-bold text-base flex items-center gap-1.5">
+            <span className="text-terracotta-dark font-bold text-base flex items-center gap-1.5">
               <span>📖 Solución revelada:</span>
             </span>
           ) : (
-            <span className="text-sage-dark font-serif font-bold text-base sm:text-lg flex items-center gap-2">
+            <span className="text-sage-dark font-bold text-base sm:text-lg flex items-center gap-2">
               <Trophy className="w-5 h-5 text-sage flex-shrink-0" />
               <span>¡Excelente descifrado!</span>
             </span>
@@ -143,7 +143,7 @@ export default function AnatomyBreakdown({
       {/* Contenido anatómico */}
       <div className="space-y-3 text-sm text-ink-800">
         <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
-          <span className="font-serif font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
+          <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
             Solución:
           </span>
           <span className="font-mono font-bold tracking-widest text-ink-900 bg-white px-3 py-1 rounded border border-ink-300 text-base inline-block w-fit">
@@ -152,7 +152,7 @@ export default function AnatomyBreakdown({
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
-          <span className="font-serif font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
+          <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
             Definición directa:
           </span>
           <span className="text-sage-dark font-semibold bg-sage-light/60 px-2 py-0.5 rounded border border-sage/30 text-xs sm:text-sm inline-block w-fit">
@@ -160,8 +160,30 @@ export default function AnatomyBreakdown({
           </span>
         </div>
 
+        {cryptic.mechanismPart && (
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
+            <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
+              Indicador{cryptic.mechanismPart.includes(',') ? 'es' : ''}:
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {cryptic.mechanismPart
+                .split(',')
+                .map((m) => m.trim())
+                .filter(Boolean)
+                .map((part, idx) => (
+                  <span
+                    key={idx}
+                    className="text-orange-950 font-semibold bg-orange-100 px-2 py-0.5 rounded border border-orange-300 text-xs sm:text-sm inline-block"
+                  >
+                    «{part}»
+                  </span>
+                ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
-          <span className="font-serif font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
+          <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
             Explicación:
           </span>
           <span className="text-ink-700 bg-white/70 p-3 rounded border border-parchment-300 text-xs sm:text-sm leading-relaxed">

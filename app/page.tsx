@@ -7,7 +7,7 @@ import GuideModal from '@/components/guide/GuideModal';
 import { fetchDailyCrypticAsync } from '@/lib/dataService';
 import { Cryptic } from '@/lib/types';
 import Link from 'next/link';
-import { BookOpen, KeyRound } from 'lucide-react';
+import { BookOpen, KeyRound, Archive } from 'lucide-react';
 import { SocialButtons } from '@/components/ui/SocialLinks';
 
 export default function HomePage() {
@@ -32,7 +32,7 @@ export default function HomePage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-3">
             <div className="w-8 h-8 border-2 border-ink-900 border-t-transparent rounded-full animate-spin"></div>
-            <p className="font-serif text-sm text-ink-600">Preparando el enigma de hoy...</p>
+            <p className="text-sm text-ink-600">Preparando el enigma de hoy...</p>
           </div>
         ) : cryptic ? (
           <div className="space-y-6">
@@ -40,7 +40,7 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="bg-parchment-50 border border-ink-300 rounded-lg p-8 text-center space-y-3">
-            <p className="font-serif text-xl font-bold text-ink-900">
+            <p className="text-xl font-bold text-ink-900">
               No hay un críptico programado para hoy todavía.
             </p>
             <p className="text-xs text-ink-600">
@@ -52,23 +52,31 @@ export default function HomePage() {
 
       {/* Footer editorial con redes de Daniel Fajardo */}
       <footer className="border-t border-ink-300/60 bg-parchment-100/80 py-5 sm:py-6 text-xs text-ink-600">
-        <div className="max-w-3xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
-            <span className="font-serif">
-              Crípticos de música antigua por <strong>Daniel Fajardo</strong>:
-            </span>
+        <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
+            <p className="leading-snug">
+              Crípticos de música antigua por <strong>Daniel Fajardo</strong>
+            </p>
             <SocialButtons compact={true} />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs">
+            <Link
+              href="/archivo"
+              className="hover:text-ink-900 underline flex items-center gap-1 cursor-pointer"
+            >
+              <Archive className="w-3.5 h-3.5" />
+              <span>Mi Archivo</span>
+            </Link>
+            <span className="text-ink-300 hidden sm:inline">•</span>
             <button
               onClick={() => setIsGuideOpen(true)}
               className="hover:text-ink-900 underline flex items-center gap-1 cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Guía</span>
+              <span>Guía de Mecanismos</span>
             </button>
-            <span className="text-ink-300">•</span>
+            <span className="text-ink-300 hidden sm:inline">•</span>
             <Link
               href="/login"
               className="hover:text-ink-900 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"

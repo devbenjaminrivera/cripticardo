@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Cryptic } from '@/lib/types';
 import LetterGrid from './LetterGrid';
@@ -20,6 +20,10 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
   );
   const [revealedIndices, setRevealedIndices] = useState<number[]>([]);
   const [definitionRevealed, setDefinitionRevealed] = useState<boolean>(false);
+  const [mechanismRevealed, setMechanismRevealed] = useState<boolean>(false);
+  const [hint1Used, setHint1Used] = useState<boolean>(false);
+  const [hint2Used, setHint2Used] = useState<boolean>(false);
+  const [hint3Used, setHint3Used] = useState<boolean>(false);
   const [isSolved, setIsSolved] = useState<boolean>(false);
   const [surrendered, setSurrendered] = useState<boolean>(false);
   const [isShake, setIsShake] = useState<boolean>(false);
@@ -33,7 +37,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
   const [showPreviousSolution, setShowPreviousSolution] = useState<boolean>(false);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
-  // Cada vez que el usuario entra a la página, el tablero se presenta limpio para que pueda resolverlo
+  // Inicialización y carga de progreso
   useEffect(() => {
     const saved = getPlayerProgress(cryptic.id);
     const wasCompleted = Boolean(saved?.completedBefore || saved?.solved);
@@ -42,10 +46,14 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       setHasPreviouslySolved(true);
     }
 
-    // El tablero siempre inicia limpio y activo para permitir resolver el enigma
+    // El tablero inicia limpio para jugar
     setLetters(Array(cryptic.letterCount).fill(''));
     setRevealedIndices([]);
     setDefinitionRevealed(false);
+    setMechanismRevealed(false);
+    setHint1Used(false);
+    setHint2Used(false);
+    setHint3Used(false);
     setIsSolved(false);
     setSurrendered(false);
     setTimeSpent(0);
@@ -55,7 +63,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     setIsInitialized(true);
   }, [cryptic.id, cryptic.letterCount]);
 
-  // Timer while not solved
+  // Cronómetro mientras no esté resuelto
   useEffect(() => {
     if (isSolved) return;
     const interval = setInterval(() => {
@@ -64,7 +72,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     return () => clearInterval(interval);
   }, [isSolved]);
 
-  // Save progress when letters or state changes
+  // Guardar progreso al cambiar letras o pistas
   useEffect(() => {
     if (!isInitialized) return;
     savePlayerProgress(cryptic.id, {
@@ -73,10 +81,27 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       userLetters: letters,
       revealedIndices,
       definitionRevealed,
+      mechanismRevealed,
+      hint1Used,
+      hint2Used,
+      hint3Used,
       timeSpentSeconds: timeSpent,
       surrendered,
     });
-  }, [isInitialized, cryptic.id, letters, revealedIndices, definitionRevealed, isSolved, surrendered, timeSpent]);
+  }, [
+    isInitialized,
+    cryptic.id,
+    letters,
+    revealedIndices,
+    definitionRevealed,
+    mechanismRevealed,
+    hint1Used,
+    hint2Used,
+    hint3Used,
+    isSolved,
+    surrendered,
+    timeSpent,
+  ]);
 
   // Normalizador para comparar ignorando tildes y mayúsculas
   const normalizeText = (str: string) =>
@@ -92,35 +117,43 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     newLetters[index] = val;
     setLetters(newLetters);
     if (feedback.text) setFeedback({});
-
-    // Auto-comprobar si todas las casillas están llenas y coinciden con la solución
-    if (
-      val &&
-      newLetters.every((l) => l && l.trim().length > 0) &&
-      newLetters.length === cryptic.letterCount
-    ) {
-      const userWord = newLetters.join('');
-      if (normalizeText(userWord) === normalizeText(cryptic.answer)) {
-        triggerVictory();
-      }
-    }
   };
 
+  // Pista 1: Revelar Definición Directa (desbloquea Pista 2)
   const handleToggleDefinition = () => {
-    if (!definitionRevealed) {
+    if (!hint1Used) {
+      setHint1Used(true);
       setHintsUsedCount((prev) => prev + 1);
+      setFeedback({
+        text: 'Pista 1 activa (verde). Se ha desbloqueado la Pista 2.',
+        type: 'info',
+      });
     }
     setDefinitionRevealed((prev) => !prev);
   };
 
+  // Pista 2: Revelar Indicador (desbloquea Pista 3)
+  const handleToggleMechanism = () => {
+    if (!hint2Used) {
+      setHint2Used(true);
+      setHintsUsedCount((prev) => prev + 1);
+      setFeedback({
+        text: 'Pista 2 activa (naranja). Se ha resaltado el indicador en el enunciado.',
+        type: 'info',
+      });
+    }
+    setMechanismRevealed((prev) => !prev);
+  };
+
+  // Pista 3: Revelar Letra (al primer uso desbloquea el botón de Rendirse)
   const handleRevealLetter = () => {
-    const cleanAnswer = cryptic.answer.toUpperCase();
+    const lettersOnlyAnswer = cryptic.answer.toUpperCase().replace(/\s+/g, '');
     const unrevealedIndices: number[] = [];
 
     for (let i = 0; i < cryptic.letterCount; i++) {
       if (
         !revealedIndices.includes(i) &&
-        normalizeText(letters[i] || '') !== normalizeText(cleanAnswer[i] || '')
+        normalizeText(letters[i] || '') !== normalizeText(lettersOnlyAnswer[i] || '')
       ) {
         unrevealedIndices.push(i);
       }
@@ -134,10 +167,10 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       return;
     }
 
-    // Pick a random unrevealed index
+    // Elegir índice aleatorio no revelado
     const randomIndex =
       unrevealedIndices[Math.floor(Math.random() * unrevealedIndices.length)];
-    const correctLetter = cleanAnswer[randomIndex];
+    const correctLetter = lettersOnlyAnswer[randomIndex];
 
     const nextRevealed = [...revealedIndices, randomIndex];
     setRevealedIndices(nextRevealed);
@@ -146,25 +179,25 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     nextLetters[randomIndex] = correctLetter;
     setLetters(nextLetters);
 
+    // Marcar Pista 3 como usada
+    if (!hint3Used) {
+      setHint3Used(true);
+    }
     setHintsUsedCount((prev) => prev + 1);
     setFeedback({
-      text: `Letra revelada en la posición ${randomIndex + 1}.`,
+      text: `Letra revelada en casilla ${randomIndex + 1}.`,
       type: 'info',
     });
-
-    // Check if word is now complete and correct
-    if (normalizeText(nextLetters.join('')) === normalizeText(cleanAnswer)) {
-      triggerVictory();
-    }
   };
 
   const handleSurrender = () => {
     if (window.confirm('¿Deseas ver la solución completa de este críptico?')) {
-      const cleanAnswer = cryptic.answer.toUpperCase();
-      setLetters(cleanAnswer.split(''));
+      const lettersOnlyAnswer = cryptic.answer.toUpperCase().replace(/\s+/g, '');
+      setLetters(lettersOnlyAnswer.split(''));
       setSurrendered(true);
       setIsSolved(true);
       setDefinitionRevealed(true);
+      setMechanismRevealed(true);
       setFeedback({
         text: 'Solución mostrada. Revisa la anatomía para comprender el mecanismo.',
         type: 'info',
@@ -176,6 +209,10 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     setLetters(Array(cryptic.letterCount).fill(''));
     setRevealedIndices([]);
     setDefinitionRevealed(false);
+    setMechanismRevealed(false);
+    setHint1Used(false);
+    setHint2Used(false);
+    setHint3Used(false);
     setIsSolved(false);
     setSurrendered(false);
     setTimeSpent(0);
@@ -190,6 +227,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
   const triggerVictory = () => {
     setIsSolved(true);
     setDefinitionRevealed(true);
+    setMechanismRevealed(true);
     setHasPreviouslySolved(true);
     setFeedback({
       text: '¡Respuesta correcta! Has descifrado el críptico.',
@@ -211,7 +249,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
   const handleCheckAnswer = () => {
     const isComplete = letters.every((l) => l && l.trim().length > 0);
     const userWord = letters.join('');
-    const cleanAnswer = cryptic.answer;
+    const lettersOnlyAnswer = cryptic.answer.replace(/\s+/g, '');
 
     if (!isComplete || letters.length < cryptic.letterCount) {
       setFeedback({
@@ -222,11 +260,11 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       return;
     }
 
-    if (normalizeText(userWord) === normalizeText(cleanAnswer)) {
+    if (normalizeText(userWord) === normalizeText(lettersOnlyAnswer)) {
       triggerVictory();
     } else {
       setFeedback({
-        text: 'La palabra no es correcta. ¡Revisa el mecanismo y la definición!',
+        text: 'La respuesta no es correcta. ¡Revisa el mecanismo y la definición!',
         type: 'error',
       });
       triggerShake();
@@ -237,6 +275,10 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     setIsShake(true);
     setTimeout(() => setIsShake(false), 400);
   };
+
+  // Desglose de palabras para respuestas de más de una palabra
+  const answerWords = cryptic.answer ? cryptic.answer.trim().split(/\s+/).filter(Boolean) : [];
+  const wordLengths = answerWords.length > 1 ? answerWords.map((w) => w.length) : undefined;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -264,14 +306,18 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
         </div>
       )}
 
-      {/* Tarjeta de la pista */}
-      <ClueCard cryptic={cryptic} showDefinition={definitionRevealed} />
+      {/* Tarjeta de la pista con resaltados progresivos en verde (definición) y naranja (juego) */}
+      <ClueCard
+        cryptic={cryptic}
+        showDefinition={definitionRevealed}
+        showMechanism={mechanismRevealed}
+      />
 
       {/* Casillas de entrada de letras */}
       <div className="bg-parchment-50 border border-ink-300 rounded-lg p-3.5 sm:p-7 shadow-xs">
         <div className="flex items-center justify-between pb-2">
           <label className="text-xs uppercase tracking-wider font-semibold text-ink-700">
-            Tu Solución ({cryptic.letterCount} casillas)
+            Tu Solución ({cryptic.letterCount} casillas{wordLengths ? ` · ${wordLengths.join(', ')}` : ''})
           </label>
           <div className="font-mono text-xs text-ink-600">
             {letters.filter(Boolean).length} / {cryptic.letterCount} letras
@@ -287,13 +333,19 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
           onChangeLetter={handleChangeLetter}
           onEnterPress={handleCheckAnswer}
           autoFocus={true}
+          wordLengths={wordLengths}
         />
 
-        {/* Acciones y pistas */}
+        {/* Acciones con pistas progresivas y botón de rendirse condicional */}
         <ClueActions
           isSolved={isSolved}
           definitionRevealed={definitionRevealed}
+          mechanismRevealed={mechanismRevealed}
+          hint1Used={hint1Used}
+          hint2Used={hint2Used}
+          hint3Used={hint3Used}
           onToggleDefinition={handleToggleDefinition}
+          onToggleMechanism={handleToggleMechanism}
           onRevealLetter={handleRevealLetter}
           onSurrender={handleSurrender}
           onCheckAnswer={handleCheckAnswer}

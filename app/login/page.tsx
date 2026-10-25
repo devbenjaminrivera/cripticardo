@@ -60,7 +60,7 @@ export default function LoginPage() {
           <div className="inline-flex p-2.5 rounded-full bg-parchment-200 border border-parchment-300 text-ink-900 mb-2">
             <KeyRound className="w-6 h-6 text-terracotta" />
           </div>
-          <h1 className="font-serif text-2xl font-bold text-ink-900">
+          <h1 className="text-2xl font-bold text-ink-900">
             Iniciar Sesión
           </h1>
           <p className="text-xs text-ink-600">
@@ -113,7 +113,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-ink-900 hover:bg-ink-800 text-parchment-50 font-serif text-sm font-semibold rounded shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-2.5 px-4 bg-ink-900 hover:bg-ink-800 text-parchment-50 text-sm font-semibold rounded shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
               <span>Iniciando sesión...</span>

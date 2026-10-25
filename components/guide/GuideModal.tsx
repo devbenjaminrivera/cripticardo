@@ -129,11 +129,11 @@ export default function GuideModal({ isOpen, onClose }: GuideModalProps) {
           <div className="flex items-center gap-2.5">
             <BookOpen className="w-5 h-5 text-terracotta" />
             <div>
-              <h2 className="font-serif text-lg sm:text-xl font-bold text-ink-900">
+              <h2 className="text-lg sm:text-xl font-bold text-ink-900">
                 Manual: Cómo Resolver un Críptico
               </h2>
               <span className="text-[11px] text-ink-600 block">
-                Los 6 tipos de pistas más comunes y cómo identificarlos
+                Basado en la guía de crípticos de <strong>Daniel Mermelstein</strong>
               </span>
             </div>
           </div>
@@ -173,7 +173,7 @@ export default function GuideModal({ isOpen, onClose }: GuideModalProps) {
               <span className="text-ink-300">•</span>
               <span className="text-xs text-ink-600 font-medium">Mecanismo Críptico</span>
             </div>
-            <h3 className="font-serif text-2xl font-bold text-ink-900 mb-2">
+            <h3 className="text-xl sm:text-2xl font-bold text-ink-900 mb-2">
               {current.title}
             </h3>
             <p className="text-ink-700 leading-relaxed text-sm sm:text-base">
@@ -209,7 +209,7 @@ export default function GuideModal({ isOpen, onClose }: GuideModalProps) {
 
             <div className="pt-3 border-t border-parchment-300 space-y-2">
               <div className="flex items-baseline gap-2">
-                <span className="font-serif font-bold text-ink-900 text-sm">Respuesta:</span>
+                <span className="font-bold text-ink-900 text-sm">Respuesta:</span>
                 <span className="font-mono font-bold tracking-widest text-ink-900 bg-white px-2.5 py-0.5 rounded border border-ink-300 text-sm">
                   {current.answer}
                 </span>
@@ -252,16 +252,27 @@ export default function GuideModal({ isOpen, onClose }: GuideModalProps) {
               Siguiente →
             </button>
           </div>
+
+          {/* Nota de atribución al autor al final del contenido */}
+          <div className="bg-white/80 border border-ink-200 rounded-lg p-3 sm:p-3.5 text-xs text-ink-700 flex items-start gap-2.5 shadow-2xs">
+            <BookOpen className="w-4 h-4 text-terracotta flex-shrink-0 mt-0.5" />
+            <div className="space-y-0.5 text-[11px] sm:text-xs leading-relaxed">
+              <span className="font-semibold text-ink-900 block">Créditos de la guía:</span>
+              <p className="text-ink-600">
+                Mecanismos, reglas y ejemplos elaborados a partir de las lecciones y explicaciones de <strong>Daniel Mermelstein</strong>.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-ink-300 bg-parchment-100 flex items-center justify-between">
-          <p className="text-[11px] text-ink-600 italic hidden sm:block">
-            Toda pista críptica contiene una definición directa y un mecanismo con las letras.
+        <div className="p-4 border-t border-ink-300 bg-parchment-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-[11px] text-ink-600 italic text-center sm:text-left">
+            Guía y mecanismos basados en el trabajo de <strong>Daniel Mermelstein</strong>.
           </p>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-2 bg-ink-900 hover:bg-ink-800 text-parchment-50 font-serif text-xs font-semibold rounded shadow-xs transition-colors cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2 bg-ink-900 hover:bg-ink-800 text-parchment-50 text-xs font-semibold rounded shadow-xs transition-colors cursor-pointer flex-shrink-0"
           >
             Entendido, ¡volver al juego!
           </button>

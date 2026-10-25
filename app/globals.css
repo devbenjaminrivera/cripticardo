@@ -37,7 +37,7 @@ body {
   color: #1C1917;
   background-image: radial-gradient(#E5DAC0 0.85px, transparent 0.85px);
   background-size: 24px 24px;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
 }
 
 /* Animación de error al validar */

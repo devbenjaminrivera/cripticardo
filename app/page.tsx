@@ -25,10 +25,18 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar onOpenGuide={() => setIsGuideOpen(true)} />
+    <div className="min-h-screen flex flex-col relative">
+      {/* Grabado histórico de laúd y tablatura como fondo */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat opacity-25 mix-blend-multiply"
+        style={{ backgroundImage: "url('/bg-main.png')" }}
+        aria-hidden="true"
+      />
 
-      <main className="flex-grow max-w-3xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Navbar onOpenGuide={() => setIsGuideOpen(true)} />
+
+        <main className="flex-grow max-w-3xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-3">
             <div className="w-8 h-8 border-2 border-ink-900 border-t-transparent rounded-full animate-spin"></div>
@@ -88,6 +96,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+      </div>
 
       {/* Modal de instrucciones */}
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />

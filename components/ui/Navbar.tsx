@@ -64,7 +64,7 @@ export default function Navbar({ onOpenGuide, solvedCount: propSolvedCount }: Na
 
               {/* Frase visible en móvil con fuente Garamond */}
               <div className="sm:hidden font-serif text-[11px] text-ink-700 leading-tight">
-                Enigmas Verbales de Música Antigua
+                Crípticos de Música Antigua
               </div>
             </div>
           </Link>

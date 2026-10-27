@@ -34,8 +34,16 @@ export const metadata: Metadata = {
   authors: [{ name: "Daniel Fajardo" }],
   creator: "Daniel Fajardo",
   icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
+  verification: {
+    google: "kKjZDt8psR06q1JRmuQO25obNJXeMi2FAIkW38zW6cU",
   },
 };
 

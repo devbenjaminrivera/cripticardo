@@ -145,8 +145,16 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     setMechanismRevealed((prev) => !prev);
   };
 
-  // Pista 3: Revelar Letra (al primer uso desbloquea el botón de Rendirse)
+  // Pista 3: Revelar Letra (solo se permite 1 letra por enigma; desbloquea el botón de Rendirse)
   const handleRevealLetter = () => {
+    if (hint3Used) {
+      setFeedback({
+        text: 'Ya has utilizado la pista de letra (solo se puede revelar 1 letra por enigma).',
+        type: 'info',
+      });
+      return;
+    }
+
     const lettersOnlyAnswer = cryptic.answer.toUpperCase().replace(/\s+/g, '');
     const unrevealedIndices: number[] = [];
 

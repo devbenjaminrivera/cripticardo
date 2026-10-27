@@ -207,40 +207,29 @@ export default function ClueCard({ cryptic, showDefinition, showMechanism = fals
 
   return (
     <div className="bg-parchment-50 border border-ink-300 rounded-lg p-4 sm:p-7 shadow-xs relative overflow-hidden">
-      {/* Marca de agua editorial */}
-      <div className="absolute -right-4 -bottom-6 sm:-right-6 sm:-bottom-8 opacity-5 font-serif text-7xl sm:text-9xl select-none pointer-events-none">
-        ¶
-      </div>
-
+      
       {/* Fila superior de metadatos */}
       <div className="flex items-center justify-between gap-2 pb-3 mb-4 sm:mb-6 border-b border-ink-300/60">
         <div className="flex items-center gap-2">
-          <span className="text-base sm:text-lg font-bold text-ink-900">
-            Juego #{cryptic.clueNumber}
-          </span>
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-ink-600 font-medium">
+          <Calendar className="w-3.5 h-3.5 text-ink-600 flex-shrink-0" />
+          <span className="capitalize">{formatDatePretty(cryptic.scheduledDate)}</span>
+        </div>
           <span
-            className={`text-[10px] sm:text-xs uppercase font-mono font-bold px-2 py-0.5 rounded border ${getDifficultyBadge(
-              cryptic.difficulty
-            )}`}
+            className={`text-[10px] sm:text-xs uppercase font-mono font-bold px-2 py-0.5 rounded border items-center justify-end ${
+              getDifficultyBadge(cryptic.difficulty)
+            }`}
           >
             {cryptic.difficulty}
           </span>
-        </div>
-
-        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-ink-600 font-medium">
-          <Calendar className="w-3.5 h-3.5 text-ink-600 flex-shrink-0" />
-          <span className="capitalize">{formatDatePretty(cryptic.scheduledDate)}</span>
         </div>
       </div>
 
       {/* Enunciado */}
       <div className="mb-2">
-        <span className="text-[10px] sm:text-xs font-mono uppercase text-ink-600 tracking-wider block mb-1.5 font-medium">
-          Enunciado ({enumerationText})
-        </span>
-        <div className="py-1">{renderClueText()}</div>
+        <div className="py-1 text-center">{renderClueText()}</div>
 
-        {/* Explicación de pistas activas */}
+        {/* Explicación de pistas activas */} 
         {(showDefinition || showMechanism) && (
           <div className="mt-3.5 text-xs space-y-1.5 bg-parchment-100/90 p-2.5 sm:p-3 rounded-md border border-parchment-300 leading-relaxed animate-in fade-in duration-200">
             {showDefinition && (

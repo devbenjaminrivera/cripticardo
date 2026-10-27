@@ -40,7 +40,7 @@ export default function HomePage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-3">
             <div className="w-8 h-8 border-2 border-ink-900 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-sm text-ink-600">Preparando el enigma de hoy...</p>
+            <p className="text-sm text-ink-600">Preparando el críptico de hoy...</p>
           </div>
         ) : cryptic ? (
           <div className="space-y-6">

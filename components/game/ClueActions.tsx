@@ -94,15 +94,25 @@ export default function ClueActions({
             </button>
           )}
 
-          {/* Pista 3: Revelar Letra (se desbloquea al pedir la Pista 2) */}
+          {/* Pista 3: Revelar Letra (se desbloquea al pedir la Pista 2, solo se permite 1 letra) */}
           {hint2Used && (
             <button
               type="button"
               onClick={onRevealLetter}
-              className="min-h-[42px] text-xs px-2.5 sm:px-3 py-2 border border-ink-300 hover:border-ink-800 rounded bg-white hover:bg-parchment-100 text-ink-800 font-medium transition-all flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer animate-in fade-in duration-300"
+              disabled={hint3Used}
+              className={`min-h-[42px] text-xs px-2.5 sm:px-3 py-2 border rounded font-medium transition-all flex items-center justify-center gap-1.5 shadow-2xs animate-in fade-in duration-300 ${
+                hint3Used
+                  ? 'bg-parchment-100 text-ink-500 border-parchment-300 cursor-not-allowed opacity-75'
+                  : 'border-ink-300 hover:border-ink-800 bg-white hover:bg-parchment-100 text-ink-800 active:scale-95 cursor-pointer'
+              }`}
+              title={hint3Used ? 'Ya has revelado una letra en este enigma' : 'Pista 3: Revelar una letra'}
             >
-              <Search className="w-3.5 h-3.5 text-ink-600 flex-shrink-0" />
-              <span>Pista 3: Revelar letra</span>
+              {hint3Used ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-sage flex-shrink-0" />
+              ) : (
+                <Search className="w-3.5 h-3.5 text-ink-600 flex-shrink-0" />
+              )}
+              <span>{hint3Used ? 'Letra revelada' : 'Pista 3: Revelar letra'}</span>
             </button>
           )}
 

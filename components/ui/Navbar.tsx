@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { BookOpen, Archive, ArrowLeft } from 'lucide-react';
 import { getSolvedCount } from '@/lib/playerStorage';
@@ -28,29 +29,45 @@ export default function Navbar({ onOpenGuide, solvedCount: propSolvedCount }: Na
   return (
     <header className="w-full border-b border-ink-300 bg-parchment-100/95 backdrop-blur-md sticky top-0 z-30 shadow-xs">
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2">
-        {/* Lado izquierdo: Título y Frase de Música Antigua */}
+        {/* Lado izquierdo: Logo, Título y Frase de Música Antigua */}
         <div className="min-w-0 flex-shrink-0">
-          {/* Frase visible en desktop con fuente Garamond */}
-          <div className="hidden sm:flex items-center gap-1.5 mb-0.5 font-serif text-xs text-ink-700">
-            <span>Enigmas Verbales de Música Antigua</span>
-            <span className="inline-block w-1 h-1 rounded-full bg-terracotta"></span>
-            <span>Por Daniel Fajardo</span>
-          </div>
+          <Link href="/" className="group flex items-center gap-2 sm:gap-2.5">
+            {/* Logo de Cripticardo (sin_fondo.png) */}
+            <div className="relative flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
+              <Image
+                src="/sin_fondo.png"
+                alt="Logo Cripticardo"
+                width={56}
+                height={56}
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain drop-shadow-xs"
+                priority
+              />
+            </div>
 
-          <Link href="/" className="group inline-flex items-baseline gap-2">
-            {/* Título CRIPTICARDO en EB Garamond itálico */}
-            <h1 className="font-serif italic text-xl sm:text-2xl md:text-3xl  tracking-tight text-ink-900 group-hover:text-terracotta transition-colors whitespace-nowrap">
-             Cripticardo
-            </h1>
-            <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 bg-ink-900 text-parchment-50 rounded-xs font-sans uppercase font-medium tracking-wider shadow-xs not-italic">
-              Edición Diaria
-            </span>
+            <div className="min-w-0">
+              {/* Frase visible en desktop con fuente Garamond */}
+              <div className="hidden sm:flex items-center gap-1.5 mb-0.5 font-serif text-xs text-ink-700">
+                <span>Crípticos de Música Antigua</span>
+                <span className="inline-block w-1 h-1 rounded-full bg-terracotta"></span>
+                <span>Por Daniel Fajardo</span>
+              </div>
+
+              <div className="inline-flex items-baseline gap-2">
+                {/* Título CRIPTICARDO en EB Garamond itálico */}
+                <h1 className="font-serif italic text-xl sm:text-2xl md:text-3xl tracking-tight text-ink-900 group-hover:text-terracotta transition-colors whitespace-nowrap">
+                  Cripticardo
+                </h1>
+                <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 bg-ink-900 text-parchment-50 rounded-xs font-sans uppercase font-medium tracking-wider shadow-xs not-italic">
+                  Edición Diaria
+                </span>
+              </div>
+
+              {/* Frase visible en móvil con fuente Garamond */}
+              <div className="sm:hidden font-serif text-[11px] text-ink-700 leading-tight">
+                Enigmas Verbales de Música Antigua
+              </div>
+            </div>
           </Link>
-
-          {/* Frase visible en móvil con fuente Garamond */}
-          <div className="sm:hidden font-serif text-[11px] text-ink-700 leading-tight">
-            Enigmas Verbales de Música Antigua
-          </div>
         </div>
 
         {/* Lado derecho: Acciones optimizadas para móvil sin botón de ingresar */}
@@ -70,15 +87,10 @@ export default function Navbar({ onOpenGuide, solvedCount: propSolvedCount }: Na
               <Link
                 href="/archivo"
                 className="flex items-center gap-1 text-[11px] sm:text-xs text-ink-800 hover:text-ink-900 font-medium py-1.5 px-2 sm:px-2.5 rounded border border-ink-300 hover:border-ink-800 bg-white hover:bg-parchment-50 transition-colors flex-shrink-0 active:scale-95 shadow-2xs"
-                title="Ver archivo de crípticos resueltos"
+                title="Ver archivo de crípticos"
               >
                 <Archive className="w-3.5 h-3.5 text-ink-700 flex-shrink-0" />
                 <span className="font-semibold">Archivo</span>
-                {typeof solvedCount === 'number' && solvedCount > 0 && (
-                  <span className="bg-sage-dark text-parchment-50 text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ml-0.5">
-                    {solvedCount}
-                  </span>
-                )}
               </Link>
             )
           )}

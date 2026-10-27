@@ -94,8 +94,16 @@ export default function ArchivePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar onOpenGuide={() => setIsGuideOpen(true)} solvedCount={solvedCount} />
+    <div className="min-h-screen flex flex-col relative font-sans">
+      {/* Grabado histórico de laúd y tablatura como fondo */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat opacity-25 mix-blend-multiply"
+        style={{ backgroundImage: "url('/bg-main.png')" }}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Navbar onOpenGuide={() => setIsGuideOpen(true)} solvedCount={solvedCount} />
 
       <main className="flex-grow max-w-4xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {selectedCryptic ? (
@@ -116,10 +124,10 @@ export default function ArchivePage() {
             <div className="border-b border-ink-300 pb-4">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <h2 className="font-serif text-2xl sm:text-3xl font-bold text-ink-900 flex items-center gap-2">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 flex items-center gap-2">
                     <span>Archivo de Crípticos</span>
                   </h2>
-                  <p className="text-xs sm:text-sm text-ink-600 mt-1">
+                  <p className="text-xs sm:text-sm text-ink-800 mt-1">
                     Colección de los enigmas publicados hasta hoy. Descifra los que te faltan o repasa tus soluciones anteriores.
                   </p>
                 </div>
@@ -138,7 +146,7 @@ export default function ArchivePage() {
             {loading ? (
               <div className="flex flex-col items-center justify-center min-h-[30vh] space-y-3">
                 <div className="w-8 h-8 border-2 border-ink-900 border-t-transparent rounded-full animate-spin"></div>
-                <p className="font-serif text-sm text-ink-600">Cargando el archivo de enigmas...</p>
+                <p className="text-sm text-ink-600">Cargando el archivo de enigmas...</p>
               </div>
             ) : cryptics.length === 0 ? (
               <div className="bg-parchment-50 border border-ink-300 rounded-xl p-8 sm:p-12 text-center space-y-4 shadow-xs">
@@ -146,7 +154,7 @@ export default function ArchivePage() {
                   <Archive className="w-6 h-6" />
                 </div>
                 <div className="space-y-1.5 max-w-md mx-auto">
-                  <h3 className="font-serif text-xl font-bold text-ink-900">
+                  <h3 className="text-xl font-bold text-ink-900">
                     Aún no hay crípticos publicados
                   </h3>
                   <p className="text-xs sm:text-sm text-ink-600 leading-relaxed">
@@ -156,7 +164,7 @@ export default function ArchivePage() {
                 <div className="pt-2">
                   <Link
                     href="/"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink-900 hover:bg-ink-800 text-parchment-50 font-serif text-sm font-semibold rounded-md shadow-xs transition-colors cursor-pointer active:scale-95"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink-900 hover:bg-ink-800 text-parchment-50 text-sm font-semibold rounded-md shadow-xs transition-colors cursor-pointer active:scale-95"
                   >
                     <Sparkles className="w-4 h-4 text-parchment-300" />
                     <span>Ir a la portada</span>
@@ -256,11 +264,15 @@ export default function ArchivePage() {
                           ? `${item.letterCount} letras: ${words.map((w) => w.length).join(', ')}`
                           : `${item.letterCount} letras`;
 
+                      // Formatear fecha limpia con primera letra mayúscula (ej: Martes, 27 de octubre de 2026)
+                      const rawDate = formatDatePretty(item.scheduledDate);
+                      const displayDate = rawDate ? rawDate.charAt(0).toUpperCase() + rawDate.slice(1) : '';
+
                       return (
                         <div
                           key={item.id}
                           onClick={() => setSelectedCryptic(item)}
-                          className={`group bg-parchment-50 hover:bg-white border rounded-lg p-4 sm:p-5 cursor-pointer transition-all shadow-xs space-y-3 relative overflow-hidden ${
+                          className={`group bg-parchment-50 hover:bg-white border rounded-lg p-4 sm:p-5 cursor-pointer transition-all shadow-xs flex flex-col justify-between relative overflow-hidden ${
                             isToday
                               ? 'border-terracotta/70 ring-1 ring-terracotta/20 hover:border-terracotta'
                               : isSolved
@@ -268,78 +280,81 @@ export default function ArchivePage() {
                               : 'border-parchment-300 hover:border-ink-700'
                           }`}
                         >
-                          {/* Fila superior: Juego #, Insignia de estado y dificultad */}
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <div className="flex items-center gap-2">
-                              <span className="font-serif font-bold text-ink-900 text-base">
-                                Juego #{item.clueNumber}
-                              </span>
-                              {isToday && (
-                                <span className="text-[10px] font-mono font-bold uppercase bg-terracotta text-parchment-50 px-2 py-0.5 rounded shadow-2xs">
-                                  HOY
+                          <div className="space-y-3">
+                            {/* Fila superior: Fecha a la izquierda con HOY e Insignias organizadas */}
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-bold text-ink-900 text-sm sm:text-base leading-snug tracking-tight">
+                                  {displayDate}
                                 </span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-1.5">
-                              {isSolved ? (
-                                <span className="text-sage-dark flex items-center gap-1 text-[11px] font-semibold bg-sage-light/70 px-2 py-0.5 rounded border border-sage/30">
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-sage" />
-                                  <span>Resuelto</span>
-                                </span>
-                              ) : (
-                                <span className="text-amber-900 flex items-center gap-1 text-[11px] font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-300">
-                                  <Clock className="w-3 h-3 text-amber-700" />
-                                  <span>Pendiente</span>
-                                </span>
-                              )}
-
-                              <span
-                                className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded border ${getDifficultyBadge(
-                                  item.difficulty
-                                )}`}
-                              >
-                                {item.difficulty}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Enunciado textual */}
-                          <p className="font-serif text-sm sm:text-base text-ink-900 line-clamp-2 leading-snug">
-                            «{item.clue}» ({countLabel})
-                          </p>
-
-                          {/* Caja de Solución: Descubierta si ya se resolvió, Oculta sin spoilers si está pendiente */}
-                          <div className="bg-white/80 p-2.5 rounded border border-parchment-300 text-xs flex items-center justify-between">
-                            {isSolved ? (
-                              <>
-                                <span className="text-ink-600">
-                                  Solución:{' '}
-                                  <strong className="font-mono text-ink-900 tracking-wider">
-                                    {item.answer}
-                                  </strong>
-                                </span>
-                                {typeof bestTime === 'number' && bestTime > 0 && (
-                                  <span
-                                    className="flex items-center gap-1 text-[11px] font-mono text-ink-600"
-                                    title="Mejor tiempo de resolución"
-                                  >
-                                    <Clock className="w-3 h-3 text-ink-500" />
-                                    <span>{formatTime(bestTime)}</span>
+                                {isToday && (
+                                  <span className="text-[10px] font-mono font-bold uppercase bg-terracotta text-parchment-50 px-2 py-0.5 rounded shadow-2xs flex-shrink-0">
+                                    HOY
                                   </span>
                                 )}
-                              </>
-                            ) : (
-                              <span className="text-ink-500 italic flex items-center gap-1.5">
-                                <HelpCircle className="w-3.5 h-3.5 text-terracotta flex-shrink-0" />
-                                <span>Solución por descifrar ({item.letterCount} letras)</span>
-                              </span>
-                            )}
+                              </div>
+
+                              <div className="flex items-center gap-1.5">
+                                {isSolved ? (
+                                  <span className="text-sage-dark flex items-center gap-1 text-[11px] font-semibold bg-sage-light/70 px-2 py-0.5 rounded border border-sage/30">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-sage" />
+                                    <span>Resuelto</span>
+                                  </span>
+                                ) : (
+                                  <span className="text-amber-900 flex items-center gap-1 text-[11px] font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-300">
+                                    <Clock className="w-3 h-3 text-amber-700" />
+                                    <span>Pendiente</span>
+                                  </span>
+                                )}
+
+                                <span
+                                  className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded border ${getDifficultyBadge(
+                                    item.difficulty
+                                  )}`}
+                                >
+                                  {item.difficulty}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Enunciado textual */}
+                            <p className="font-serif text-sm sm:text-base text-ink-900 line-clamp-2 leading-snug">
+                              «{item.clue}» ({countLabel})
+                            </p>
+
+                            {/* Caja de Solución: Descubierta si ya se resolvió, Oculta sin spoilers si está pendiente */}
+                            <div className="bg-white/80 p-2.5 rounded border border-parchment-300 text-xs flex items-center justify-between">
+                              {isSolved ? (
+                                <>
+                                  <span className="text-ink-600">
+                                    Solución:{' '}
+                                    <strong className="font-mono text-ink-900 tracking-wider">
+                                      {item.answer}
+                                    </strong>
+                                  </span>
+                                  {typeof bestTime === 'number' && bestTime > 0 && (
+                                    <span
+                                      className="flex items-center gap-1 text-[11px] font-mono text-ink-600"
+                                      title="Mejor tiempo de resolución"
+                                    >
+                                      <Clock className="w-3 h-3 text-ink-500" />
+                                      <span>{formatTime(bestTime)}</span>
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="text-ink-500 italic flex items-center gap-1.5">
+                                  <HelpCircle className="w-3.5 h-3.5 text-terracotta flex-shrink-0" />
+                                  <span>Solución por descifrar ({item.letterCount} letras)</span>
+                                </span>
+                              )}
+                            </div>
                           </div>
 
-                          {/* Fila inferior: Fecha y Acción de juego */}
-                          <div className="flex items-center justify-between pt-2 border-t border-parchment-200 text-[11px] text-ink-600">
-                            <span className="capitalize">{formatDatePretty(item.scheduledDate)}</span>
+                          {/* Fila inferior: Número correlativo y Acción de juego anclados al fondo */}
+                          <div className="flex items-center justify-end pt-2.5 mt-3 border-t border-parchment-200 text-[11px] text-ink-600">
+                
+
                             {isSolved ? (
                               <span className="text-ink-700 group-hover:text-ink-900 font-semibold flex items-center gap-1">
                                 <span>Revisar / Jugar de nuevo</span>
@@ -387,6 +402,7 @@ export default function ArchivePage() {
       </footer>
 
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+      </div>
     </div>
   );
 }

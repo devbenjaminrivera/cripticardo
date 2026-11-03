@@ -87,3 +87,25 @@ button, input, a {
     font-size: 16px;
   }
 }
+
+/* Animación de marquesina continua e infinita para el carrusel móvil */
+@keyframes marquee-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+.animate-marquee-infinite {
+  display: flex;
+  flex-shrink: 0;
+  animation: marquee-scroll 22s linear infinite;
+  will-change: transform;
+}
+
+.paused-marquee {
+  animation-play-state: paused !important;
+}
+

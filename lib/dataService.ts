@@ -94,6 +94,8 @@ export function mapRowToCryptic(row: any): Cryptic {
     defPart: row.def_part,
     mechanismPart: row.mechanism_part,
     mechanismText: row.mechanism_text,
+    imageUrl: row.image_url || row.imageUrl || undefined,
+    imageCaption: row.image_caption || row.imageCaption || undefined,
     status: row.status || 'published',
     createdAt: row.created_at,
   };
@@ -281,6 +283,8 @@ export async function saveCrypticAsync(
             def_part: newClue.defPart.trim(),
             mechanism_part: newClue.mechanismPart.trim(),
             mechanism_text: newClue.mechanismText.trim(),
+            image_url: newClue.imageUrl ? newClue.imageUrl.trim() : null,
+            image_caption: newClue.imageCaption ? newClue.imageCaption.trim() : null,
             status: 'published',
           })
           .eq('id', newClue.id)
@@ -317,6 +321,8 @@ export async function saveCrypticAsync(
             def_part: newClue.defPart.trim(),
             mechanism_part: newClue.mechanismPart.trim(),
             mechanism_text: newClue.mechanismText.trim(),
+            image_url: newClue.imageUrl ? newClue.imageUrl.trim() : null,
+            image_caption: newClue.imageCaption ? newClue.imageCaption.trim() : null,
             status: 'published',
           })
           .select()
@@ -353,6 +359,8 @@ function saveCrypticLocal(newClue: Omit<Cryptic, 'id' | 'clueNumber'> & { id?: s
         id: newClue.id,
         answer: newClue.answer.trim().toUpperCase(),
         letterCount: newClue.answer.trim().replace(/\s+/g, '').length,
+        imageUrl: newClue.imageUrl,
+        imageCaption: newClue.imageCaption,
       };
       all[index] = updated;
       if (typeof window !== 'undefined') {
@@ -369,6 +377,8 @@ function saveCrypticLocal(newClue: Omit<Cryptic, 'id' | 'clueNumber'> & { id?: s
     clueNumber: nextNum,
     answer: newClue.answer.trim().toUpperCase(),
     letterCount: newClue.answer.trim().replace(/\s+/g, '').length,
+    imageUrl: newClue.imageUrl,
+    imageCaption: newClue.imageCaption,
     status: 'published',
     createdAt: new Date().toISOString(),
   };

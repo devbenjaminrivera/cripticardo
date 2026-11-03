@@ -23,6 +23,7 @@ create table if not exists public.cryptics (
   def_part text not null,
   mechanism_part text not null,
   mechanism_text text not null,
+  image_url text, -- URL o base64 de la ilustración del críptico (opcional)
   status text check (status in ('draft', 'published')) default 'published',
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
@@ -177,3 +178,75 @@ insert into public.cryptics (
   'published'
 )
 on conflict (scheduled_date) do nothing;
+
+-- =========================================================================
+-- SECCIÓN D: ALMACENAMIENTO DE IMÁGENES (SUPABASE STORAGE)
+-- =========================================================================
+
+-- 1. Asegurar la columna image_url e image_caption en la tabla cryptics si ya la habías creado
+alter table public.cryptics add column if not exists image_url text;
+alter table public.cryptics add column if not exists image_caption text;
+
+-- 2. Crear el bucket público para imágenes de crípticos
+insert into storage.buckets (id, name, public)
+values ('cryptic-images', 'cryptic-images', true)
+on conflict (id) do update set public = true;
+
+-- 3. Políticas de acceso para el bucket 'cryptic-images'
+drop policy if exists "Imágenes públicas de crípticos" on storage.objects;
+create policy "Imágenes públicas de crípticos"
+on storage.objects for select
+using (bucket_id = 'cryptic-images');
+
+drop policy if exists "Permitir subir imágenes de crípticos" on storage.objects;
+create policy "Permitir subir imágenes de crípticos"
+on storage.objects for insert
+with check (bucket_id = 'cryptic-images');
+
+drop policy if exists "Permitir actualizar imágenes de crípticos" on storage.objects;
+create policy "Permitir actualizar imágenes de crípticos"
+on storage.objects for update
+using (bucket_id = 'cryptic-images');
+
+drop policy if exists "Permitir eliminar imágenes de crípticos" on storage.objects;
+create policy "Permitir eliminar imágenes de crípticos"
+on storage.objects for delete
+using (bucket_id = 'cryptic-images');
+
+-- =========================================================================
+-- SECCIÓN E: RECOMENDACIONES MUSICALES DIARIAS (SPOTIFY)
+-- Permite personalizar la canción recomendada para el banner superior
+-- =========================================================================
+
+create table if not exists public.daily_recommendations (
+  id uuid primary key default gen_random_uuid(),
+  scheduled_date date unique not null,
+  title text not null,
+  artist text not null,
+  spotify_url text not null,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+-- Índice por fecha
+create index if not exists idx_daily_recommendations_date on public.daily_recommendations (scheduled_date);
+
+-- Habilitar RLS
+alter table public.daily_recommendations enable row level security;
+
+-- Permitir lectura y escritura a la aplicación
+drop policy if exists "Permitir acceso completo a daily_recommendations" on public.daily_recommendations;
+create policy "Permitir acceso completo a daily_recommendations"
+on public.daily_recommendations
+for all
+using (true)
+with check (true);
+
+-- Trigger de updated_at para recomendaciones
+drop trigger if exists set_daily_recommendations_updated_at on public.daily_recommendations;
+create trigger set_daily_recommendations_updated_at
+before update on public.daily_recommendations
+for each row
+execute function public.handle_updated_at();
+
+

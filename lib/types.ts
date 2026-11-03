@@ -13,6 +13,8 @@ export interface Cryptic {
   defPart: string; // Fragmento de definición para la Pista 1
   mechanismPart: string; // Fragmento del juego de palabras
   mechanismText: string; // Explicación de la resolución
+  imageUrl?: string; // URL o imagen ilustrativa del críptico
+  imageCaption?: string; // Título y autor de la obra/ilustración (editable desde admin)
   status?: 'published' | 'draft';
   createdAt?: string;
 }

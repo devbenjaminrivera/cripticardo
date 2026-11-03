@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/ui/Navbar';
 import ClueEditorForm from '@/components/admin/ClueEditorForm';
+import DailyRecommendationEditor from '@/components/admin/DailyRecommendationEditor';
 import {
   fetchAllCrypticsAsync,
   saveCrypticAsync,
@@ -235,8 +236,12 @@ export default function AdminPage() {
             onCancel={() => setEditingCryptic(null)}
           />
         ) : (
-          /* Lista de Crípticos Programados */
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Editor de la Recomendación Musical del Día */}
+            <DailyRecommendationEditor />
+
+            {/* Lista de Crípticos Programados */}
+            <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-ink-900">
                 Calendario de Enigmas Programados ({cryptics.length})
@@ -294,6 +299,11 @@ export default function AdminPage() {
                         <span className="text-[11px] font-mono uppercase text-ink-600 bg-parchment-200 px-2 py-0.5 rounded">
                           {item.difficulty}
                         </span>
+                        {item.imageUrl && (
+                          <span className="text-[10px] font-mono text-sage-dark bg-sage-light/60 border border-sage/40 px-2 py-0.5 rounded flex items-center gap-1 font-semibold">
+                            <span>📷 Con imagen</span>
+                          </span>
+                        )}
                       </div>
 
                       <p className="font-serif text-sm text-ink-800">
@@ -333,6 +343,7 @@ export default function AdminPage() {
               })}
             </div>
             )}
+            </div>
           </div>
         )}
       </main>

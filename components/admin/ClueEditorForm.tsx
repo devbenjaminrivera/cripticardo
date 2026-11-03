@@ -1,11 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Cryptic, Difficulty } from '@/lib/types';
 import ClueCard, { findSubstringIntervals } from '@/components/game/ClueCard';
 import LetterGrid from '@/components/game/LetterGrid';
+import AnatomyBreakdown from '@/components/game/AnatomyBreakdown';
 import { getNextAvailableDate, formatDatePretty } from '@/lib/dataService';
-import { Save, Eye, ArrowLeft, Calendar, HelpCircle } from 'lucide-react';
+import {
+  Save,
+  Eye,
+  ArrowLeft,
+  Calendar,
+  ImageIcon,
+  Upload,
+  Trash2,
+  Loader2,
+  CheckCircle2,
+} from 'lucide-react';
 
 interface ClueEditorFormProps {
   initialData?: Cryptic | null;
@@ -37,6 +48,15 @@ export default function ClueEditorForm({
   const [mechanismText, setMechanismText] = useState(
     initialData?.mechanismText || ''
   );
+  const [imageUrl, setImageUrl] = useState<string>(initialData?.imageUrl || '');
+  const [imageCaption, setImageCaption] = useState<string>(initialData?.imageCaption || '');
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [showUrlInput, setShowUrlInput] = useState<boolean>(false);
+  const [customUrl, setCustomUrl] = useState<string>('');
+  const [previewTab, setPreviewTab] = useState<'game' | 'resolution'>('game');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Limpiar respuesta: conserva letras y espacios individuales
   const cleanAnswer = answer
@@ -90,7 +110,61 @@ export default function ClueEditorForm({
     defPart: defPart || '',
     mechanismPart: mechanismPart || '',
     mechanismText: mechanismText || 'Explicación del juego de palabras...',
+    imageUrl: imageUrl.trim() || undefined,
+    imageCaption: imageCaption.trim() || undefined,
     status: 'published',
+  };
+
+  const handleFileSelect = async (file: File) => {
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Por favor selecciona un archivo de imagen (JPG, PNG, WebP o GIF).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('La imagen debe pesar menos de 5 MB.');
+      return;
+    }
+
+    setUploadError(null);
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al subir la imagen');
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        setImageUrl(data.url);
+        // Cambiar automáticamente la vista previa a la tarjeta de resolución para verla de inmediato
+        setPreviewTab('resolution');
+      }
+    } catch (err: unknown) {
+      console.warn('Fallo al subir por API, usando fallback de lectura local:', err);
+      // Fallback a Base64 si el backend o bucket no está listo
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setImageUrl(reader.result);
+          setPreviewTab('resolution');
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -110,6 +184,8 @@ export default function ClueEditorForm({
       defPart: defPart.trim(),
       mechanismPart: mechanismPart.trim(),
       mechanismText: mechanismText.trim(),
+      imageUrl: imageUrl.trim() || undefined,
+      imageCaption: imageCaption.trim() || undefined,
       status: 'published',
     });
   };
@@ -118,6 +194,7 @@ export default function ClueEditorForm({
     <div className="space-y-6">
       <div className="flex items-center justify-between pb-4 border-b border-ink-300">
         <button
+          type="button"
           onClick={onCancel}
           className="text-xs font-semibold flex items-center gap-1.5 text-ink-700 hover:text-ink-900 bg-parchment-200 px-3 py-1.5 rounded border border-ink-300 transition-colors cursor-pointer"
         >
@@ -322,6 +399,173 @@ export default function ClueEditorForm({
                 Desglose paso a paso que se le revelará al jugador cuando resuelva el enigma o se rinda.
               </p>
             </div>
+
+            {/* 6. Imagen ilustrativa del críptico (NUEVO) */}
+            <div className="space-y-2 pt-2 border-t border-parchment-300">
+              <div className="flex items-center justify-between">
+                <label className="text-xs uppercase tracking-wider font-semibold text-ink-700 flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-terracotta" />
+                  <span>Imagen ilustrativa</span>
+                  <span className="text-[11px] font-normal text-ink-500 lowercase">(opcional)</span>
+                </label>
+                {!imageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(!showUrlInput)}
+                    className="text-[11px] text-terracotta hover:underline font-medium cursor-pointer"
+                  >
+                    {showUrlInput ? 'Subir archivo de imagen' : 'O pegar enlace URL'}
+                  </button>
+                )}
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelect(file);
+                }}
+                className="hidden"
+              />
+
+              {imageUrl ? (
+                <div className="space-y-3">
+                  <div className="bg-white border border-ink-300 rounded-lg p-3 flex items-center justify-between gap-3 shadow-2xs">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="w-16 h-16 rounded border border-ink-200 overflow-hidden bg-parchment-100 flex-shrink-0 flex items-center justify-center">
+                        <img
+                          src={imageUrl}
+                          alt="Vista previa de imagen"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="space-y-0.5 min-w-0">
+                        <span className="text-xs font-semibold text-ink-900 flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-sage" />
+                          <span>Imagen asignada al críptico</span>
+                        </span>
+                        <span className="text-[11px] text-ink-600 block truncate">
+                          Se adapta al formato de la ilustración en la tarjeta de resolución.
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="text-xs font-medium px-2.5 py-1.5 border border-ink-300 hover:border-ink-800 rounded bg-parchment-50 hover:bg-parchment-100 text-ink-800 transition-colors cursor-pointer"
+                      >
+                        Cambiar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageUrl('');
+                          setCustomUrl('');
+                          setImageCaption('');
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                        }}
+                        className="p-1.5 border border-ink-300 hover:border-terracotta rounded text-terracotta hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Eliminar imagen"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Campo para editar el nombre de la obra y autor en pantalla completa */}
+                  <div className="bg-parchment-50 border border-ink-300 rounded-lg p-3 space-y-1.5 shadow-2xs">
+                    <label className="text-xs font-semibold text-ink-800 block">
+                      Nombre de la obra y autor (para pantalla completa)
+                    </label>
+                    <input
+                      type="text"
+                      value={imageCaption}
+                      onChange={(e) => setImageCaption(e.target.value)}
+                      placeholder="Ej: Joven tocando el cornetto — Bernardo Strozzi (c. 1635)"
+                      className="w-full px-3 py-1.5 text-xs bg-white border border-ink-300 rounded text-ink-900 focus:outline-none focus:border-ink-900 font-serif"
+                    />
+                    <p className="text-[11px] text-ink-600">
+                      Reemplaza el texto automático <em>«Ilustración: {cleanAnswer || 'RESPUESTA'}»</em> en la barra del visor en pantalla completa.
+                    </p>
+                  </div>
+                </div>
+              ) : showUrlInput ? (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={customUrl}
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                      onChange={(e) => setCustomUrl(e.target.value)}
+                      className="flex-1 px-3 py-2 text-xs bg-white border border-ink-300 rounded text-ink-900 focus:outline-none focus:border-ink-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (customUrl.trim()) {
+                          setImageUrl(customUrl.trim());
+                          setPreviewTab('resolution');
+                        }
+                      }}
+                      className="px-3 py-2 bg-ink-900 text-parchment-50 text-xs font-semibold rounded hover:bg-ink-800 transition-colors cursor-pointer"
+                    >
+                      Aplicar
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-ink-600 italic">
+                    Pega una URL directa a una imagen alojada en la web.
+                  </p>
+                </div>
+              ) : (
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleFileSelect(file);
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-all ${
+                    isUploading
+                      ? 'border-terracotta bg-parchment-100/50'
+                      : 'border-ink-300 hover:border-ink-700 bg-white/60 hover:bg-white'
+                  }`}
+                >
+                  {isUploading ? (
+                    <div className="flex flex-col items-center gap-2 py-2">
+                      <Loader2 className="w-6 h-6 text-terracotta animate-spin" />
+                      <span className="text-xs font-semibold text-ink-800">
+                        Subiendo y optimizando imagen...
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1.5">
+                      <Upload className="w-5 h-5 text-ink-600" />
+                      <span className="text-xs font-semibold text-ink-900">
+                        Haz clic aquí o arrastra una imagen para subir
+                      </span>
+                      <span className="text-[11px] text-ink-500">
+                        PNG, JPG, WebP o GIF (máximo 5 MB)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {uploadError && (
+                <p className="text-[11px] text-terracotta-dark font-medium bg-red-50 p-2 rounded border border-red-200">
+                  {uploadError}
+                </p>
+              )}
+
+              <p className="text-[11px] text-ink-600 italic">
+                Aparecerá en la parte derecha de la tarjeta de resolución (abajo de pistas y junto a la solución y pistas anatómicas).
+              </p>
+            </div>
           </div>
 
           <div className="pt-3 flex items-center justify-end gap-3">
@@ -347,55 +591,98 @@ export default function ClueEditorForm({
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-ink-600 font-semibold">
               <Eye className="w-4 h-4 text-terracotta" />
-              <span>Vista previa interactiva</span>
+              <span>Vista previa en vivo</span>
             </div>
 
-            <div className="flex items-center gap-1.5 text-[11px]">
-              {Boolean(defPart) && (
-                <span className="bg-sage-light text-sage-dark px-2 py-0.5 rounded border border-sage/40 font-medium">
-                  Definición (verde)
-                </span>
-              )}
-              {Boolean(mechanismPart) && (
-                <span className="bg-orange-100 text-orange-950 px-2 py-0.5 rounded border border-orange-300 font-medium">
-                  Indicador{detectedIndicators.length > 1 ? 'es' : ''} (naranja)
-                </span>
-              )}
+            {/* Selector de pestañas de previsualización */}
+            <div className="flex items-center gap-1 bg-parchment-200 p-0.5 rounded border border-ink-300 text-xs">
+              <button
+                type="button"
+                onClick={() => setPreviewTab('game')}
+                className={`px-2.5 py-1 rounded transition-all cursor-pointer font-medium ${
+                  previewTab === 'game'
+                    ? 'bg-ink-900 text-parchment-50 shadow-2xs font-semibold'
+                    : 'text-ink-700 hover:text-ink-900'
+                }`}
+              >
+                1. Juego
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewTab('resolution')}
+                className={`px-2.5 py-1 rounded transition-all cursor-pointer font-medium flex items-center gap-1 ${
+                  previewTab === 'resolution'
+                    ? 'bg-ink-900 text-parchment-50 shadow-2xs font-semibold'
+                    : 'text-ink-700 hover:text-ink-900'
+                }`}
+              >
+                <span>2. Resolución</span>
+                {imageUrl && <span className="text-[10px]">📷</span>}
+              </button>
             </div>
           </div>
 
-          <ClueCard
-            cryptic={previewCryptic}
-            showDefinition={Boolean(defPart)}
-            showMechanism={Boolean(mechanismPart)}
-          />
+          {previewTab === 'game' ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-1.5 text-[11px]">
+                {Boolean(defPart) && (
+                  <span className="bg-sage-light text-sage-dark px-2 py-0.5 rounded border border-sage/40 font-medium">
+                    Definición (verde)
+                  </span>
+                )}
+                {Boolean(mechanismPart) && (
+                  <span className="bg-orange-100 text-orange-950 px-2 py-0.5 rounded border border-orange-300 font-medium">
+                    Indicador{detectedIndicators.length > 1 ? 'es' : ''} (naranja)
+                  </span>
+                )}
+              </div>
 
-          <div className="bg-parchment-50 border border-ink-300 rounded-lg p-5 shadow-xs space-y-3">
-            <div className="text-xs uppercase tracking-wider font-semibold text-ink-600">
-              Casillas interactivas ({letterCount || 0} letras
-              {wordLengths.length > 1 ? `: ${wordLengths.join(', ')}` : ''})
+              <ClueCard
+                cryptic={previewCryptic}
+                showDefinition={Boolean(defPart)}
+                showMechanism={Boolean(mechanismPart)}
+              />
+
+              <div className="bg-parchment-50 border border-ink-300 rounded-lg p-5 shadow-xs space-y-3">
+                <div className="text-xs uppercase tracking-wider font-semibold text-ink-600">
+                  Casillas interactivas ({letterCount || 0} letras
+                  {wordLengths.length > 1 ? `: ${wordLengths.join(', ')}` : ''})
+                </div>
+                <LetterGrid
+                  length={letterCount || 4}
+                  letters={previewTestLetters}
+                  revealedIndices={[]}
+                  isSolved={false}
+                  isShake={false}
+                  autoFocus={false}
+                  wordLengths={wordLengths.length > 1 ? wordLengths : undefined}
+                  onChangeLetter={(i, val) => {
+                    const next = [...previewTestLetters];
+                    next[i] = val;
+                    setPreviewTestLetters(next);
+                  }}
+                  onEnterPress={() => {}}
+                />
+                <p className="text-[11px] text-ink-600 italic">
+                  {wordLengths.length > 1
+                    ? 'Las palabras se agrupan automáticamente con espacio visual.'
+                    : 'Puedes probar a tipear para comprobar el largo y cómo lo experimentará el jugador.'}
+                </p>
+              </div>
             </div>
-            <LetterGrid
-              length={letterCount || 4}
-              letters={previewTestLetters}
-              revealedIndices={[]}
-              isSolved={false}
-              isShake={false}
-              autoFocus={false}
-              wordLengths={wordLengths.length > 1 ? wordLengths : undefined}
-              onChangeLetter={(i, val) => {
-                const next = [...previewTestLetters];
-                next[i] = val;
-                setPreviewTestLetters(next);
-              }}
-              onEnterPress={() => {}}
-            />
-            <p className="text-[11px] text-ink-600 italic">
-              {wordLengths.length > 1
-                ? 'Las palabras se agrupan automáticamente con espacio visual.'
-                : 'Puedes probar a tipear para comprobar el largo y cómo lo experimentará el jugador.'}
-            </p>
-          </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs text-ink-600 italic">
+                Así verá el jugador la tarjeta tras resolver correctamente el críptico:
+              </p>
+              <AnatomyBreakdown
+                cryptic={previewCryptic}
+                hintsUsedCount={0}
+                timeSpentSeconds={142}
+                surrendered={false}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

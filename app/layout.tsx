@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { EB_Garamond, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import BackgroundAudioPlayer from "@/components/audio/BackgroundAudioPlayer";
 
 const ebGaramond = EB_Garamond({
   variable: "--font-eb-garamond",
@@ -29,7 +30,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cripticardo.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cripticardo.vercel.app'),
   title: "Cripticardo | El Críptico Diario",
   description: "Resuelve el enigma verbal del día. Pistas crípticas, juegos de palabras y acertijos con anatomía explicada paso a paso.",
   authors: [{ name: "Daniel Fajardo" }],
@@ -60,6 +61,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col selection:bg-terracotta-light selection:text-terracotta-dark">
         {children}
+        <BackgroundAudioPlayer />
       </body>
     </html>
   );

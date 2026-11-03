@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { BookOpen, Archive, ArrowLeft } from 'lucide-react';
 import { getSolvedCount } from '@/lib/playerStorage';
+import MusicCarousel from '@/components/ui/MusicCarousel';
 
 interface NavbarProps {
   onOpenGuide?: () => void;
@@ -119,6 +120,9 @@ export default function Navbar({ onOpenGuide, solvedCount: propSolvedCount }: Na
           )}
         </div>
       </div>
+
+      {/* Carrusel musical debajo de los botones de la barra superior */}
+      {!isAdmin && <MusicCarousel />}
     </header>
   );
 }

@@ -7,7 +7,7 @@ import LetterGrid from './LetterGrid';
 import ClueCard from './ClueCard';
 import ClueActions from './ClueActions';
 import AnatomyBreakdown from './AnatomyBreakdown';
-import { getPlayerProgress, savePlayerProgress } from '@/lib/playerStorage';
+import { getPlayerProgress, savePlayerProgress, DailyProgress } from '@/lib/playerStorage';
 import confetti from 'canvas-confetti';
 
 interface CrypticGameProps {
@@ -34,6 +34,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
   const [timeSpent, setTimeSpent] = useState<number>(0);
   const [hintsUsedCount, setHintsUsedCount] = useState<number>(0);
   const [hasPreviouslySolved, setHasPreviouslySolved] = useState<boolean>(false);
+  const [previousProgress, setPreviousProgress] = useState<DailyProgress | null>(null);
   const [showPreviousSolution, setShowPreviousSolution] = useState<boolean>(false);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
@@ -42,8 +43,12 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     const saved = getPlayerProgress(cryptic.id);
     const wasCompleted = Boolean(saved?.completedBefore || saved?.solved);
 
-    if (wasCompleted) {
+    if (wasCompleted && saved) {
       setHasPreviouslySolved(true);
+      setPreviousProgress(saved);
+    } else {
+      setHasPreviouslySolved(false);
+      setPreviousProgress(null);
     }
 
     // El tablero inicia limpio para jugar
@@ -63,18 +68,19 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     setIsInitialized(true);
   }, [cryptic.id, cryptic.letterCount]);
 
-  // Cronómetro mientras no esté resuelto
+  // Cronómetro mientras no esté resuelto y no esté visualizando la solución previa
   useEffect(() => {
-    if (isSolved) return;
+    if (isSolved || showPreviousSolution) return;
     const interval = setInterval(() => {
       setTimeSpent((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [isSolved]);
+  }, [isSolved, showPreviousSolution]);
 
-  // Guardar progreso al cambiar letras o pistas
+  // Guardar progreso al cambiar letras o pistas (se omite si solo está viendo la anatomía previa)
   useEffect(() => {
     if (!isInitialized) return;
+    if (showPreviousSolution && !isSolved) return;
     savePlayerProgress(cryptic.id, {
       crypticId: cryptic.id,
       solved: isSolved,
@@ -101,6 +107,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     isSolved,
     surrendered,
     timeSpent,
+    showPreviousSolution,
   ]);
 
   // Normalizador para comparar ignorando tildes y mayúsculas
@@ -366,9 +373,23 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       {(isSolved || showPreviousSolution) && (
         <AnatomyBreakdown
           cryptic={cryptic}
-          hintsUsedCount={hintsUsedCount}
-          timeSpentSeconds={timeSpent}
-          surrendered={surrendered}
+          hintsUsedCount={
+            isSolved
+              ? hintsUsedCount
+              : previousProgress
+              ? (previousProgress.hint1Used ? 1 : 0) +
+                (previousProgress.hint2Used ? 1 : 0) +
+                (previousProgress.hint3Used ? 1 : 0)
+              : 0
+          }
+          timeSpentSeconds={
+            isSolved
+              ? timeSpent
+              : previousProgress?.bestTimeSeconds ??
+                previousProgress?.timeSpentSeconds ??
+                0
+          }
+          surrendered={isSolved ? surrendered : Boolean(previousProgress?.surrendered)}
           onPlayAgain={isSolved ? handleResetGame : undefined}
         />
       )}

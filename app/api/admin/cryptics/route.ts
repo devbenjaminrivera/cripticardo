@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const cleanAnswer = (body.answer || '').trim().toUpperCase();
     const letterCount = cleanAnswer.replace(/\s+/g, '').length;
 
-    const rowData = {
+    const rowData: Record<string, unknown> = {
       scheduled_date: body.scheduledDate,
       clue: (body.clue || '').trim(),
       answer: cleanAnswer,
@@ -58,18 +58,34 @@ export async function POST(request: NextRequest) {
       mechanism_part: (body.mechanismPart || '').trim(),
       mechanism_text: (body.mechanismText || '').trim(),
       image_url: body.imageUrl ? body.imageUrl.trim() : null,
-      image_caption: body.imageCaption ? body.imageCaption.trim() : null,
       status: 'published',
     };
 
+    if (body.imageCaption !== undefined && body.imageCaption !== null) {
+      rowData.image_caption = body.imageCaption.trim() || null;
+    }
+
     if (body.id && !body.id.startsWith('cr-')) {
       // Actualizar existente
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('cryptics')
         .update(rowData)
         .eq('id', body.id)
         .select()
         .single();
+
+      // Si la columna image_caption aún no existe en Supabase, reintentar sin ella
+      if (error && error.message?.includes('image_caption')) {
+        delete rowData.image_caption;
+        const retry = await supabase
+          .from('cryptics')
+          .update(rowData)
+          .eq('id', body.id)
+          .select()
+          .single();
+        data = retry.data;
+        error = retry.error;
+      }
 
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
@@ -88,7 +104,7 @@ export async function POST(request: NextRequest) {
       const nextClueNumber = maxRow?.clue_number ? maxRow.clue_number + 1 : 1;
 
       // Insertar nuevo con el número de juego calculado
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('cryptics')
         .insert({
           ...rowData,
@@ -96,6 +112,21 @@ export async function POST(request: NextRequest) {
         })
         .select()
         .single();
+
+      // Si la columna image_caption aún no existe en Supabase, reintentar sin ella
+      if (error && error.message?.includes('image_caption')) {
+        delete rowData.image_caption;
+        const retry = await supabase
+          .from('cryptics')
+          .insert({
+            ...rowData,
+            clue_number: nextClueNumber,
+          })
+          .select()
+          .single();
+        data = retry.data;
+        error = retry.error;
+      }
 
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });

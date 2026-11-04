@@ -3,7 +3,7 @@
 import React from 'react';
 import { Cryptic } from '@/lib/types';
 import { formatDatePretty } from '@/lib/dataService';
-import { Calendar, Sparkles } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 interface ClueCardProps {
   cryptic: Cryptic;
@@ -192,14 +192,6 @@ export default function ClueCard({ cryptic, showDefinition, showMechanism = fals
         return 'bg-parchment-200 text-ink-700 border-ink-300';
     }
   };
-
-  // Enumeración de letras y desglose si la solución es una frase con espacios
-  const answerWords = cryptic.answer ? cryptic.answer.trim().split(/\s+/).filter(Boolean) : [];
-  const wordLengths = answerWords.map((w) => w.length);
-  const enumerationText =
-    wordLengths.length > 1
-      ? `${cryptic.letterCount} letras: ${wordLengths.join(', ')}`
-      : `${cryptic.letterCount} letras`;
 
   const hasMultipleIndicators = Boolean(
     cryptic.mechanismPart && cryptic.mechanismPart.includes(',')

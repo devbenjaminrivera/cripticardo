@@ -9,7 +9,10 @@ export default function BackgroundAudioPlayer() {
   const pathname = usePathname();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('cripticardo_audio_muted') === 'true';
+  });
 
   // No reproducir música en el panel de administración ni en login
   const isExcludedPage = pathname.startsWith('/admin') || pathname === '/login';
@@ -32,7 +35,6 @@ export default function BackgroundAudioPlayer() {
 
     const userMuted = localStorage.getItem('cripticardo_audio_muted') === 'true';
     if (userMuted) {
-      setIsMuted(true);
       audio.muted = true;
       return;
     }

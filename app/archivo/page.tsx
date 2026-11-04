@@ -33,11 +33,11 @@ export default function ArchivePage() {
 
   const [todayStr, setTodayStr] = useState<string>('');
 
-  const loadData = async () => {
-    const today = getTodayDateString();
-    setTodayStr(today);
+  const loadData = React.useCallback(async () => {
     const all = await fetchAllCrypticsAsync();
     const solved = getAllSolvedCrypticIds();
+    const today = getTodayDateString();
+    setTodayStr(today);
 
     // Crípticos publicados desde la fecha actual hacia atrás (excluyendo fechas futuras)
     const available = all
@@ -47,11 +47,14 @@ export default function ArchivePage() {
     setCryptics(available);
     setSolvedIds(solved);
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    const timer = setTimeout(() => {
+      void loadData();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [loadData]);
 
   const handleBackToList = () => {
     setSelectedCryptic(null);

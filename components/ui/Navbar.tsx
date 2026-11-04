@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { BookOpen, Archive, ArrowLeft } from 'lucide-react';
-import { getSolvedCount } from '@/lib/playerStorage';
 import MusicCarousel from '@/components/ui/MusicCarousel';
 
 interface NavbarProps {
@@ -13,19 +12,10 @@ interface NavbarProps {
   solvedCount?: number;
 }
 
-export default function Navbar({ onOpenGuide, solvedCount: propSolvedCount }: NavbarProps) {
+export default function Navbar({ onOpenGuide }: NavbarProps) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith('/admin');
   const isArchive = pathname === '/archivo';
-  const [solvedCount, setSolvedCount] = useState<number | undefined>(propSolvedCount);
-
-  useEffect(() => {
-    if (typeof propSolvedCount === 'number') {
-      setSolvedCount(propSolvedCount);
-    } else {
-      setSolvedCount(getSolvedCount());
-    }
-  }, [propSolvedCount]);
 
   return (
     <header className="w-full border-b border-ink-300 bg-parchment-100/95 backdrop-blur-md sticky top-0 z-30 shadow-xs">

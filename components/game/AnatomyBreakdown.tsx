@@ -241,6 +241,7 @@ export default function AnatomyBreakdown({
                   </div>
                 )}
 
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={cryptic.imageUrl}
                   alt={cryptic.imageCaption || `Ilustración de ${cryptic.answer}`}
@@ -365,6 +366,7 @@ export default function AnatomyBreakdown({
 
             {/* Contenedor de imagen ampliada */}
             <div className="relative flex items-center justify-center w-full flex-1 min-h-0 overflow-auto bg-parchment-100/60 rounded-lg p-2 border border-parchment-300">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={cryptic.imageUrl}
                 alt={cryptic.imageCaption || `Ilustración de ${cryptic.answer}`}

@@ -17,7 +17,6 @@ export interface DailyProgress {
 }
 
 const PLAYER_PROGRESS_KEY = 'cripticardo_player_progress_v1';
-const PLAYER_STREAK_KEY = 'cripticardo_player_streak_v1';
 
 export function getPlayerProgress(crypticId: string): DailyProgress | null {
   if (typeof window === 'undefined') return null;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Cryptic, Difficulty } from '@/lib/types';
 import ClueCard, { findSubstringIntervals } from '@/components/game/ClueCard';
 import LetterGrid from '@/components/game/LetterGrid';
@@ -81,22 +81,12 @@ export default function ClueEditorForm({
     (ind) => findSubstringIntervals(clue, ind).length === 0
   );
 
-  const [previewTestLetters, setPreviewTestLetters] = useState<string[]>(
-    Array(letterCount || 4).fill('')
+  const [previewTestLetters, setPreviewTestLetters] = useState<string[]>([]);
+  const targetLettersLen = letterCount || 4;
+  const currentTestLetters = Array.from(
+    { length: targetLettersLen },
+    (_, i) => previewTestLetters[i] || ''
   );
-
-  // Ajustar el tamaño del grid de prueba al cambiar la longitud de la respuesta
-  useEffect(() => {
-    setPreviewTestLetters((prev) => {
-      const targetLen = letterCount || 4;
-      if (prev.length === targetLen) return prev;
-      const next = Array(targetLen).fill('');
-      for (let i = 0; i < Math.min(prev.length, targetLen); i++) {
-        next[i] = prev[i];
-      }
-      return next;
-    });
-  }, [letterCount]);
 
   // Previsualización en tiempo real
   const previewCryptic: Cryptic = {
@@ -435,6 +425,7 @@ export default function ClueEditorForm({
                   <div className="bg-white border border-ink-300 rounded-lg p-3 flex items-center justify-between gap-3 shadow-2xs">
                     <div className="flex items-center gap-3 overflow-hidden">
                       <div className="w-16 h-16 rounded border border-ink-200 overflow-hidden bg-parchment-100 flex-shrink-0 flex items-center justify-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={imageUrl}
                           alt="Vista previa de imagen"
@@ -649,15 +640,15 @@ export default function ClueEditorForm({
                   {wordLengths.length > 1 ? `: ${wordLengths.join(', ')}` : ''})
                 </div>
                 <LetterGrid
-                  length={letterCount || 4}
-                  letters={previewTestLetters}
+                  length={targetLettersLen}
+                  letters={currentTestLetters}
                   revealedIndices={[]}
                   isSolved={false}
                   isShake={false}
                   autoFocus={false}
                   wordLengths={wordLengths.length > 1 ? wordLengths : undefined}
                   onChangeLetter={(i, val) => {
-                    const next = [...previewTestLetters];
+                    const next = [...currentTestLetters];
                     next[i] = val;
                     setPreviewTestLetters(next);
                   }}

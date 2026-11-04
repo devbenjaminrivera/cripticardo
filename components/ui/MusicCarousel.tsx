@@ -11,60 +11,9 @@ import {
 } from '@/lib/musicData';
 import { getChileDateString } from '@/lib/dataService';
 
-export default function MusicCarousel() {
-  const [todayRec, setTodayRec] = useState<MusicRecommendation>(DAILY_RECOMMENDATIONS[0]);
-  const [isPaused, setIsPaused] = useState(false);
-  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Cargar recomendación actualizada de la API o localStorage
-  const loadActiveRecommendation = useCallback(async () => {
-    setTodayRec(getTodayRecommendation());
-    const todayStr = getChileDateString();
-
-    // 1. Respaldo local prioritario
-    try {
-      const local = localStorage.getItem(`cripticardo_rec_${todayStr}`);
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (parsed.title && parsed.artist) {
-          setTodayRec(parsed);
-        }
-      }
-    } catch {}
-
-    // 2. Consulta API del servidor
-    try {
-      const res = await fetch(`/api/music/today?date=${todayStr}`);
-      if (res.ok) {
-        const data: MusicRecommendation = await res.json();
-        if (data.title && data.artist) {
-          setTodayRec(data);
-        }
-      }
-    } catch (e) {
-      // Mantiene el valor actual si falla la red
-    }
-  }, []);
-
-  useEffect(() => {
-    loadActiveRecommendation();
-  }, [loadActiveRecommendation]);
-
-  // Manejo de eventos táctiles en móvil (pausa momentánea al tocar para facilitar el clic en el enlace)
-  const handleTouchStart = () => {
-    setIsPaused(true);
-    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
-  };
-
-  const handleTouchEnd = () => {
-    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
-    resumeTimeoutRef.current = setTimeout(() => {
-      setIsPaused(false);
-    }, 2500);
-  };
-
-  // Bloque reutilizable de items musicales para el marquee móvil
-  const MusicTrackItems = () => (
+// Bloque reutilizable de items musicales para el marquee móvil
+function MusicTrackItems({ todayRec }: { todayRec: MusicRecommendation }) {
+  return (
     <div className="flex items-center gap-4 flex-shrink-0">
       {/* 1. Recomendación del día */}
       <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -111,6 +60,68 @@ export default function MusicCarousel() {
       <span className="text-ink-400 select-none">•</span>
     </div>
   );
+}
+
+export default function MusicCarousel() {
+  const [todayRec, setTodayRec] = useState<MusicRecommendation>(DAILY_RECOMMENDATIONS[0]);
+  const [isPaused, setIsPaused] = useState(false);
+  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cargar recomendación actualizada de la API o localStorage
+  const loadActiveRecommendation = useCallback(async () => {
+    const todayStr = getChileDateString();
+
+    let localRec: MusicRecommendation | null = null;
+    try {
+      const local = localStorage.getItem(`cripticardo_rec_${todayStr}`);
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (parsed.title && parsed.artist) {
+          localRec = parsed;
+        }
+      }
+    } catch {}
+
+    // Consulta API del servidor
+    try {
+      const res = await fetch(`/api/music/today?date=${todayStr}`);
+      if (res.ok) {
+        const data: MusicRecommendation = await res.json();
+        if (data.title && data.artist) {
+          setTodayRec(data);
+          return;
+        }
+      }
+    } catch {
+      // Mantiene el valor actual si falla la red
+    }
+
+    if (localRec) {
+      setTodayRec(localRec);
+    } else {
+      setTodayRec(getTodayRecommendation());
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadActiveRecommendation();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [loadActiveRecommendation]);
+
+  // Manejo de eventos táctiles en móvil (pausa momentánea al tocar para facilitar el clic en el enlace)
+  const handleTouchStart = () => {
+    setIsPaused(true);
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+  };
+
+  const handleTouchEnd = () => {
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    resumeTimeoutRef.current = setTimeout(() => {
+      setIsPaused(false);
+    }, 2500);
+  };
 
   return (
     <div
@@ -185,15 +196,15 @@ export default function MusicCarousel() {
         {/* Pista de marquesina continua e infinita */}
         <div className="flex w-full overflow-hidden whitespace-nowrap">
           <div className={`animate-marquee-infinite items-center gap-4 pr-4 ${isPaused ? 'paused-marquee' : ''}`}>
-            <MusicTrackItems />
-            <MusicTrackItems />
+            <MusicTrackItems todayRec={todayRec} />
+            <MusicTrackItems todayRec={todayRec} />
           </div>
           <div
             className={`animate-marquee-infinite items-center gap-4 pr-4 ${isPaused ? 'paused-marquee' : ''}`}
             aria-hidden="true"
           >
-            <MusicTrackItems />
-            <MusicTrackItems />
+            <MusicTrackItems todayRec={todayRec} />
+            <MusicTrackItems todayRec={todayRec} />
           </div>
         </div>
       </div>

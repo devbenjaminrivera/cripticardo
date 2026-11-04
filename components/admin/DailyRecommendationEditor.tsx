@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Music, Check, RefreshCw, ExternalLink, Sparkles, Calendar, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Check, RefreshCw, ExternalLink, Calendar, RotateCcw } from 'lucide-react';
 import { SpotifyIcon } from '@/components/ui/SocialLinks';
 import { getChileDateString, formatDatePretty } from '@/lib/dataService';
 import {
@@ -15,24 +15,16 @@ interface Props {
 }
 
 export default function DailyRecommendationEditor({ onRecommendationSaved }: Props) {
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>(getChileDateString);
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [spotifyUrl, setSpotifyUrl] = useState('');
   const [isCustom, setIsCustom] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    const today = getChileDateString();
-    setSelectedDate(today);
-    loadRecommendation(today);
-  }, []);
-
-  const loadRecommendation = async (dateStr: string) => {
-    setIsLoading(true);
+  const loadRecommendation = useCallback(async (dateStr: string) => {
     setStatusMessage(null);
     try {
       const res = await fetch(`/api/admin/music?date=${encodeURIComponent(dateStr)}`);
@@ -42,7 +34,6 @@ export default function DailyRecommendationEditor({ onRecommendationSaved }: Pro
         setArtist(data.artist || '');
         setSpotifyUrl(data.spotifyUrl || '');
         setIsCustom(Boolean(data.isCustom));
-        setIsLoading(false);
         return;
       }
     } catch (e) {
@@ -58,7 +49,6 @@ export default function DailyRecommendationEditor({ onRecommendationSaved }: Pro
         setArtist(parsed.artist);
         setSpotifyUrl(parsed.spotifyUrl);
         setIsCustom(true);
-        setIsLoading(false);
         return;
       }
     } catch {}
@@ -69,8 +59,15 @@ export default function DailyRecommendationEditor({ onRecommendationSaved }: Pro
     setArtist(def.artist);
     setSpotifyUrl(def.spotifyUrl);
     setIsCustom(false);
-    setIsLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    const today = getChileDateString();
+    const timer = setTimeout(() => {
+      void loadRecommendation(today);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [loadRecommendation]);
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value;
@@ -120,7 +117,7 @@ export default function DailyRecommendationEditor({ onRecommendationSaved }: Pro
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || 'Error al guardar en el servidor');
       }
-    } catch (err: any) {
+    } catch {
       // Guardado local de emergencia
       localStorage.setItem(`cripticardo_rec_${selectedDate}`, JSON.stringify({ ...payload, isCustom: true }));
       setIsCustom(true);

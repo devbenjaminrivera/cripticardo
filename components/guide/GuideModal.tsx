@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, BookOpen, Lightbulb, ChevronRight, HelpCircle } from 'lucide-react';
+import { X, BookOpen, ChevronRight } from 'lucide-react';
 
 interface GuideModalProps {
   isOpen: boolean;

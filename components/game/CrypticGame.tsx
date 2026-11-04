@@ -40,32 +40,36 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
 
   // Inicialización y carga de progreso
   useEffect(() => {
-    const saved = getPlayerProgress(cryptic.id);
-    const wasCompleted = Boolean(saved?.completedBefore || saved?.solved);
+    const timer = setTimeout(() => {
+      const saved = getPlayerProgress(cryptic.id);
+      const wasCompleted = Boolean(saved?.completedBefore || saved?.solved);
 
-    if (wasCompleted && saved) {
-      setHasPreviouslySolved(true);
-      setPreviousProgress(saved);
-    } else {
-      setHasPreviouslySolved(false);
-      setPreviousProgress(null);
-    }
+      if (wasCompleted && saved) {
+        setHasPreviouslySolved(true);
+        setPreviousProgress(saved);
+      } else {
+        setHasPreviouslySolved(false);
+        setPreviousProgress(null);
+      }
 
-    // El tablero inicia limpio para jugar
-    setLetters(Array(cryptic.letterCount).fill(''));
-    setRevealedIndices([]);
-    setDefinitionRevealed(false);
-    setMechanismRevealed(false);
-    setHint1Used(false);
-    setHint2Used(false);
-    setHint3Used(false);
-    setIsSolved(false);
-    setSurrendered(false);
-    setTimeSpent(0);
-    setHintsUsedCount(0);
-    setFeedback({});
-    setShowPreviousSolution(false);
-    setIsInitialized(true);
+      // El tablero inicia limpio para jugar
+      setLetters(Array(cryptic.letterCount).fill(''));
+      setRevealedIndices([]);
+      setDefinitionRevealed(false);
+      setMechanismRevealed(false);
+      setHint1Used(false);
+      setHint2Used(false);
+      setHint3Used(false);
+      setIsSolved(false);
+      setSurrendered(false);
+      setTimeSpent(0);
+      setHintsUsedCount(0);
+      setFeedback({});
+      setShowPreviousSolution(false);
+      setIsInitialized(true);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [cryptic.id, cryptic.letterCount]);
 
   // Cronómetro mientras no esté resuelto y no esté visualizando la solución previa

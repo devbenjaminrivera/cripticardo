@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/ui/Navbar';
@@ -20,10 +20,8 @@ import {
   Trash2,
   Calendar,
   LogOut,
-  Sparkles,
   BookOpen,
   Eye,
-  CheckCircle2,
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -32,6 +30,22 @@ export default function AdminPage() {
   const [editingCryptic, setEditingCryptic] = useState<Cryptic | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  const loadCryptics = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/cryptics');
+      if (res.ok) {
+        const data = await res.json();
+        setCryptics(data);
+        return;
+      }
+    } catch (e) {
+      console.warn('Error cargando desde API admin:', e);
+    }
+    const list = await fetchAllCrypticsAsync();
+    list.sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
+    setCryptics(list);
+  }, []);
 
   // Comprobar autenticación en el servidor
   useEffect(() => {
@@ -51,23 +65,7 @@ export default function AdminPage() {
       }
     };
     checkAuth();
-  }, [router]);
-
-  const loadCryptics = async () => {
-    try {
-      const res = await fetch('/api/admin/cryptics');
-      if (res.ok) {
-        const data = await res.json();
-        setCryptics(data);
-        return;
-      }
-    } catch (e) {
-      console.warn('Error cargando desde API admin:', e);
-    }
-    const list = await fetchAllCrypticsAsync();
-    list.sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate));
-    setCryptics(list);
-  };
+  }, [router, loadCryptics]);
 
   const handleLogout = async () => {
     try {
@@ -86,20 +84,30 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+
       if (res.ok) {
         await loadCryptics();
         setIsCreating(false);
         setEditingCryptic(null);
         return;
       }
+
+      const errJson = await res.json().catch(() => ({}));
+      const msg = errJson.error || 'Error al guardar en el servidor';
+      alert(`No se pudo guardar el críptico: ${msg}`);
+      return;
     } catch (e) {
       console.warn('Error al guardar en API admin:', e);
     }
 
-    await saveCrypticAsync(data);
-    await loadCryptics();
-    setIsCreating(false);
-    setEditingCryptic(null);
+    try {
+      await saveCrypticAsync(data);
+      await loadCryptics();
+      setIsCreating(false);
+      setEditingCryptic(null);
+    } catch {
+      alert('Error al guardar el críptico localmente.');
+    }
   };
 
   const handleDelete = async (id: string, clueNum: number) => {

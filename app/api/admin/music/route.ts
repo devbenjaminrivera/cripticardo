@@ -67,8 +67,9 @@ export async function GET(request: NextRequest) {
         isCustom: true,
       }))
     );
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Error en servidor' }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Error en servidor';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -128,8 +129,9 @@ export async function POST(request: NextRequest) {
       scheduledDate: data.scheduled_date,
       isCustom: true,
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Error al guardar' }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Error al guardar';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

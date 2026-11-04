@@ -269,27 +269,44 @@ export async function saveCrypticAsync(
 
   if (isSupabaseConfigured && supabase) {
     try {
+      const rowPayload: Record<string, unknown> = {
+        scheduled_date: newClue.scheduledDate,
+        clue: newClue.clue.trim(),
+        answer: cleanAnswer,
+        letter_count: letterCount,
+        difficulty: newClue.difficulty,
+        category: newClue.category || '',
+        def_part: newClue.defPart.trim(),
+        mechanism_part: newClue.mechanismPart.trim(),
+        mechanism_text: newClue.mechanismText.trim(),
+        image_url: newClue.imageUrl ? newClue.imageUrl.trim() : null,
+        status: 'published',
+      };
+
+      if (newClue.imageCaption !== undefined && newClue.imageCaption !== null) {
+        rowPayload.image_caption = newClue.imageCaption.trim() || null;
+      }
+
       if (newClue.id && !newClue.id.startsWith('cr-')) {
         // Actualizar existente
-        const { data, error } = await supabase
+        let { data, error } = await supabase
           .from('cryptics')
-          .update({
-            scheduled_date: newClue.scheduledDate,
-            clue: newClue.clue.trim(),
-            answer: cleanAnswer,
-            letter_count: letterCount,
-            difficulty: newClue.difficulty,
-            category: newClue.category || '',
-            def_part: newClue.defPart.trim(),
-            mechanism_part: newClue.mechanismPart.trim(),
-            mechanism_text: newClue.mechanismText.trim(),
-            image_url: newClue.imageUrl ? newClue.imageUrl.trim() : null,
-            image_caption: newClue.imageCaption ? newClue.imageCaption.trim() : null,
-            status: 'published',
-          })
+          .update(rowPayload)
           .eq('id', newClue.id)
           .select()
           .single();
+
+        if (error && error.message?.includes('image_caption')) {
+          delete rowPayload.image_caption;
+          const retry = await supabase
+            .from('cryptics')
+            .update(rowPayload)
+            .eq('id', newClue.id)
+            .select()
+            .single();
+          data = retry.data;
+          error = retry.error;
+        }
 
         if (!error && data) {
           const updated = mapRowToCryptic(data);
@@ -308,25 +325,28 @@ export async function saveCrypticAsync(
         const nextClueNumber = maxRow?.clue_number ? maxRow.clue_number + 1 : 1;
 
         // Insertar nuevo con el número calculado
-        const { data, error } = await supabase
+        let { data, error } = await supabase
           .from('cryptics')
           .insert({
-            scheduled_date: newClue.scheduledDate,
+            ...rowPayload,
             clue_number: nextClueNumber,
-            clue: newClue.clue.trim(),
-            answer: cleanAnswer,
-            letter_count: letterCount,
-            difficulty: newClue.difficulty,
-            category: newClue.category || '',
-            def_part: newClue.defPart.trim(),
-            mechanism_part: newClue.mechanismPart.trim(),
-            mechanism_text: newClue.mechanismText.trim(),
-            image_url: newClue.imageUrl ? newClue.imageUrl.trim() : null,
-            image_caption: newClue.imageCaption ? newClue.imageCaption.trim() : null,
-            status: 'published',
           })
           .select()
           .single();
+
+        if (error && error.message?.includes('image_caption')) {
+          delete rowPayload.image_caption;
+          const retry = await supabase
+            .from('cryptics')
+            .insert({
+              ...rowPayload,
+              clue_number: nextClueNumber,
+            })
+            .select()
+            .single();
+          data = retry.data;
+          error = retry.error;
+        }
 
         if (!error && data) {
           const created = mapRowToCryptic(data);

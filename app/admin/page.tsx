@@ -312,6 +312,11 @@ export default function AdminPage() {
                             <span>📷 Con imagen</span>
                           </span>
                         )}
+                        {item.materialPart && (
+                          <span className="text-[10px] font-mono text-blue-950 bg-blue-100 border border-blue-300 px-2 py-0.5 rounded flex items-center gap-1 font-semibold">
+                            <span>📦 Material</span>
+                          </span>
+                        )}
                       </div>
 
                       <p className="font-serif text-sm text-ink-800">

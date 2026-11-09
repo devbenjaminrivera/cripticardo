@@ -21,9 +21,11 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
   const [revealedIndices, setRevealedIndices] = useState<number[]>([]);
   const [definitionRevealed, setDefinitionRevealed] = useState<boolean>(false);
   const [mechanismRevealed, setMechanismRevealed] = useState<boolean>(false);
+  const [materialRevealed, setMaterialRevealed] = useState<boolean>(false);
   const [hint1Used, setHint1Used] = useState<boolean>(false);
   const [hint2Used, setHint2Used] = useState<boolean>(false);
   const [hint3Used, setHint3Used] = useState<boolean>(false);
+  const [hint4Used, setHint4Used] = useState<boolean>(false);
   const [isSolved, setIsSolved] = useState<boolean>(false);
   const [surrendered, setSurrendered] = useState<boolean>(false);
   const [isShake, setIsShake] = useState<boolean>(false);
@@ -57,9 +59,11 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       setRevealedIndices([]);
       setDefinitionRevealed(false);
       setMechanismRevealed(false);
+      setMaterialRevealed(false);
       setHint1Used(false);
       setHint2Used(false);
       setHint3Used(false);
+      setHint4Used(false);
       setIsSolved(false);
       setSurrendered(false);
       setTimeSpent(0);
@@ -92,9 +96,11 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       revealedIndices,
       definitionRevealed,
       mechanismRevealed,
+      materialRevealed,
       hint1Used,
       hint2Used,
       hint3Used,
+      hint4Used,
       timeSpentSeconds: timeSpent,
       surrendered,
     });
@@ -105,9 +111,11 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     revealedIndices,
     definitionRevealed,
     mechanismRevealed,
+    materialRevealed,
     hint1Used,
     hint2Used,
     hint3Used,
+    hint4Used,
     isSolved,
     surrendered,
     timeSpent,
@@ -130,35 +138,36 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     if (feedback.text) setFeedback({});
   };
 
-  // Pista 1: Revelar Definición Directa (desbloquea Pista 2)
+  // Pista 1: Revelar Definición Directa - AMARILLO
   const handleToggleDefinition = () => {
     if (!hint1Used) {
       setHint1Used(true);
       setHintsUsedCount((prev) => prev + 1);
-      setFeedback({
-        text: 'Pista 1 activa (verde). Se ha desbloqueado la Pista 2.',
-        type: 'info',
-      });
     }
     setDefinitionRevealed((prev) => !prev);
   };
 
-  // Pista 2: Revelar Indicador (desbloquea Pista 3)
+  // Pista 2: Revelar Indicador - ROJO
   const handleToggleMechanism = () => {
     if (!hint2Used) {
       setHint2Used(true);
       setHintsUsedCount((prev) => prev + 1);
-      setFeedback({
-        text: 'Pista 2 activa (naranja). Se ha resaltado el indicador en el enunciado.',
-        type: 'info',
-      });
     }
     setMechanismRevealed((prev) => !prev);
   };
 
-  // Pista 3: Revelar Letra (solo se permite 1 letra por enigma; desbloquea el botón de Rendirse)
+  // Pista 3: Revelar Material - AZUL
+  const handleToggleMaterial = () => {
+    if (!hint3Used) {
+      setHint3Used(true);
+      setHintsUsedCount((prev) => prev + 1);
+    }
+    setMaterialRevealed((prev) => !prev);
+  };
+
+  // Pista 4: Revelar Letra (solo se permite 1 letra por enigma; desbloquea el botón de Rendirse)
   const handleRevealLetter = () => {
-    if (hint3Used) {
+    if (hint4Used) {
       setFeedback({
         text: 'Ya has utilizado la pista de letra (solo se puede revelar 1 letra por enigma).',
         type: 'info',
@@ -198,9 +207,9 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     nextLetters[randomIndex] = correctLetter;
     setLetters(nextLetters);
 
-    // Marcar Pista 3 como usada
-    if (!hint3Used) {
-      setHint3Used(true);
+    // Marcar Pista 4 como usada
+    if (!hint4Used) {
+      setHint4Used(true);
     }
     setHintsUsedCount((prev) => prev + 1);
     setFeedback({
@@ -217,6 +226,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
       setIsSolved(true);
       setDefinitionRevealed(true);
       setMechanismRevealed(true);
+      setMaterialRevealed(true);
       setFeedback({
         text: 'Solución mostrada. Revisa la anatomía para comprender el mecanismo.',
         type: 'info',
@@ -229,9 +239,11 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     setRevealedIndices([]);
     setDefinitionRevealed(false);
     setMechanismRevealed(false);
+    setMaterialRevealed(false);
     setHint1Used(false);
     setHint2Used(false);
     setHint3Used(false);
+    setHint4Used(false);
     setIsSolved(false);
     setSurrendered(false);
     setTimeSpent(0);
@@ -247,6 +259,7 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
     setIsSolved(true);
     setDefinitionRevealed(true);
     setMechanismRevealed(true);
+    setMaterialRevealed(true);
     setHasPreviouslySolved(true);
     setFeedback({
       text: '¡Respuesta correcta! Has descifrado el críptico.',
@@ -325,11 +338,12 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
         </div>
       )}
 
-      {/* Tarjeta de la pista con resaltados progresivos en verde (definición) y naranja (juego) */}
+      {/* Tarjeta de la pista con resaltados progresivos en verde (definición), naranja (juego) y rojo (material) */}
       <ClueCard
         cryptic={cryptic}
         showDefinition={definitionRevealed}
         showMechanism={mechanismRevealed}
+        showMaterial={materialRevealed}
       />
 
       {/* Casillas de entrada de letras */}
@@ -360,11 +374,14 @@ export default function CrypticGame({ cryptic }: CrypticGameProps) {
           isSolved={isSolved}
           definitionRevealed={definitionRevealed}
           mechanismRevealed={mechanismRevealed}
+          materialRevealed={materialRevealed}
           hint1Used={hint1Used}
           hint2Used={hint2Used}
           hint3Used={hint3Used}
+          hint4Used={hint4Used}
           onToggleDefinition={handleToggleDefinition}
           onToggleMechanism={handleToggleMechanism}
+          onToggleMaterial={handleToggleMaterial}
           onRevealLetter={handleRevealLetter}
           onSurrender={handleSurrender}
           onCheckAnswer={handleCheckAnswer}

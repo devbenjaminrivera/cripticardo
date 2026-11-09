@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       category: body.category || '',
       def_part: (body.defPart || '').trim(),
       mechanism_part: (body.mechanismPart || '').trim(),
+      material_part: (body.materialPart || '').trim(),
       mechanism_text: (body.mechanismText || '').trim(),
       image_url: body.imageUrl ? body.imageUrl.trim() : null,
       status: 'published',

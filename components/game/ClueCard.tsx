@@ -9,6 +9,7 @@ interface ClueCardProps {
   cryptic: Cryptic;
   showDefinition: boolean;
   showMechanism?: boolean;
+  showMaterial?: boolean;
 }
 
 // Función robusta para encontrar coincidencias de fragmentos textuales en el enunciado
@@ -81,14 +82,15 @@ export function findSubstringIntervals(
   return intervals;
 }
 
-export default function ClueCard({ cryptic, showDefinition, showMechanism = false }: ClueCardProps) {
-  // Renderizar el texto de la pista resaltando definición (verde) y/o juego de palabras (naranja)
+export default function ClueCard({ cryptic, showDefinition, showMechanism = false, showMaterial = false }: ClueCardProps) {
+  // Renderizar el texto de la pista resaltando definición (verde), juego de palabras (naranja) y material (rojo)
   const renderClueText = () => {
     const clue = cryptic.clue;
     const def = cryptic.defPart;
     const mech = cryptic.mechanismPart;
+    const mat = cryptic.materialPart;
 
-    const intervals: { start: number; end: number; kind: 'def' | 'mech' }[] = [];
+    const intervals: { start: number; end: number; kind: 'def' | 'mech' | 'mat' }[] = [];
 
     // 1. Definición (verde)
     if (showDefinition && def) {
@@ -120,6 +122,21 @@ export default function ClueCard({ cryptic, showDefinition, showMechanism = fals
       }
     }
 
+    // 3. Material (azul): separado por comas
+    if (showMaterial && mat) {
+      const materials = mat
+        .split(',')
+        .map((m) => m.trim())
+        .filter(Boolean);
+
+      for (const material of materials) {
+        const matches = findSubstringIntervals(clue, material);
+        for (const m of matches) {
+          intervals.push({ start: m.start, end: m.end, kind: 'mat' });
+        }
+      }
+    }
+
     if (intervals.length === 0) {
       return (
         <span className="font-serif text-xl sm:text-2xl md:text-3xl text-ink-900 leading-snug sm:leading-relaxed font-medium">
@@ -131,7 +148,7 @@ export default function ClueCard({ cryptic, showDefinition, showMechanism = fals
     // Ordenar por posición de inicio en el enunciado
     intervals.sort((a, b) => a.start - b.start);
 
-    const segments: { text: string; type: 'plain' | 'def' | 'mech' }[] = [];
+    const segments: { text: string; type: 'plain' | 'def' | 'mech' | 'mat' }[] = [];
     let curr = 0;
 
     for (const item of intervals) {
@@ -157,7 +174,7 @@ export default function ClueCard({ cryptic, showDefinition, showMechanism = fals
               <mark
                 key={i}
                 title="Pista 1: Definición directa"
-                className="bg-sage-light/90 text-sage-dark px-1.5 py-0.5 rounded border-b-2 border-sage font-semibold not-italic shadow-2xs"
+                className="bg-amber-100 text-amber-950 px-1.5 py-0.5 rounded border-b-2 border-amber-500 font-semibold not-italic shadow-2xs"
               >
                 {seg.text}
               </mark>
@@ -168,7 +185,18 @@ export default function ClueCard({ cryptic, showDefinition, showMechanism = fals
               <mark
                 key={i}
                 title="Pista 2: Indicador"
-                className="bg-orange-100 text-orange-950 px-1.5 py-0.5 rounded border-b-2 border-orange-500 font-semibold not-italic shadow-2xs"
+                className="bg-red-100 text-red-950 px-1.5 py-0.5 rounded border-b-2 border-red-500 font-semibold not-italic shadow-2xs"
+              >
+                {seg.text}
+              </mark>
+            );
+          }
+          if (seg.type === 'mat') {
+            return (
+              <mark
+                key={i}
+                title="Pista 3: Material"
+                className="bg-blue-100 text-blue-950 px-1.5 py-0.5 rounded border-b-2 border-blue-500 font-semibold not-italic shadow-2xs"
               >
                 {seg.text}
               </mark>
@@ -199,7 +227,7 @@ export default function ClueCard({ cryptic, showDefinition, showMechanism = fals
 
   return (
     <div className="bg-parchment-50 border border-ink-300 rounded-lg p-4 sm:p-7 shadow-xs relative overflow-hidden">
-      
+
       {/* Fila superior de metadatos */}
       <div className="flex items-center justify-between gap-2 pb-3 mb-4 sm:mb-6 border-b border-ink-300/60">
         <div className="flex items-center gap-2">
@@ -221,25 +249,33 @@ export default function ClueCard({ cryptic, showDefinition, showMechanism = fals
       <div className="mb-2">
         <div className="py-1 text-center">{renderClueText()}</div>
 
-        {/* Explicación de pistas activas */} 
-        {(showDefinition || showMechanism) && (
+        {/* Explicación de pistas activas */}
+        {(showDefinition || showMechanism || showMaterial) && (
           <div className="mt-3.5 text-xs space-y-1.5 bg-parchment-100/90 p-2.5 sm:p-3 rounded-md border border-parchment-300 leading-relaxed animate-in fade-in duration-200">
             {showDefinition && (
-              <p className="text-sage-dark font-medium flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-sage flex-shrink-0"></span>
+              <p className="text-amber-950 font-medium flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 flex-shrink-0"></span>
                 <span>
-                  <strong>Verde (Pista 1):</strong> Definición directa de la palabra.
+                  <strong>Amarillo (Pista 1):</strong> Definición directa de la palabra.
                 </span>
               </p>
             )}
             {showMechanism && (
-              <p className="text-orange-950 font-medium flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 flex-shrink-0"></span>
+              <p className="text-red-950 font-medium flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0"></span>
                 <span>
-                  <strong>Naranja (Pista 2):</strong>{' '}
+                  <strong>Rojo (Pista 2):</strong>{' '}
                   {hasMultipleIndicators
                     ? 'Indicadores separados del mecanismo.'
                     : 'Indicador del mecanismo.'}
+                </span>
+              </p>
+            )}
+            {showMaterial && (
+              <p className="text-blue-950 font-medium flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                <span>
+                  <strong>Azul (Pista 3):</strong> Material base con el que opera el enigma.
                 </span>
               </p>
             )}

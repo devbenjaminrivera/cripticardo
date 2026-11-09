@@ -12,6 +12,7 @@ export interface Cryptic {
   category?: string; // Opcional / oculto para que el usuario deduzca el mecanismo
   defPart: string; // Fragmento de definición para la Pista 1
   mechanismPart: string; // Fragmento del juego de palabras
+  materialPart: string; // Palabra(s) material con las que el usuario juega (Pista 3)
   mechanismText: string; // Explicación de la resolución
   imageUrl?: string; // URL o imagen ilustrativa del críptico
   imageCaption?: string; // Título y autor de la obra/ilustración (editable desde admin)

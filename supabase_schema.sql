@@ -22,8 +22,10 @@ create table if not exists public.cryptics (
   category text default '',
   def_part text not null,
   mechanism_part text not null,
+  material_part text default '', -- Palabra(s) material para Pista 3
   mechanism_text text not null,
   image_url text, -- URL o base64 de la ilustración del críptico (opcional)
+  image_caption text, -- Título y autor de la obra/ilustración
   status text check (status in ('draft', 'published')) default 'published',
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
@@ -183,9 +185,10 @@ on conflict (scheduled_date) do nothing;
 -- SECCIÓN D: ALMACENAMIENTO DE IMÁGENES (SUPABASE STORAGE)
 -- =========================================================================
 
--- 1. Asegurar la columna image_url e image_caption en la tabla cryptics si ya la habías creado
+-- 1. Asegurar las columnas image_url, image_caption y material_part en la tabla cryptics si ya la habías creado
 alter table public.cryptics add column if not exists image_url text;
 alter table public.cryptics add column if not exists image_caption text;
+alter table public.cryptics add column if not exists material_part text default '';
 
 -- 2. Crear el bucket público para imágenes de crípticos
 insert into storage.buckets (id, name, public)

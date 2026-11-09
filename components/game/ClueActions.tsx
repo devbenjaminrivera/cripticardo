@@ -1,17 +1,20 @@
 'use client';
 
 import React from 'react';
-import { Lightbulb, Shuffle, Search, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Lightbulb, Shuffle, Search, EyeOff, CheckCircle2, Package } from 'lucide-react';
 
 interface ClueActionsProps {
   isSolved: boolean;
   definitionRevealed: boolean;
   mechanismRevealed: boolean;
+  materialRevealed: boolean;
   hint1Used: boolean;
   hint2Used: boolean;
   hint3Used: boolean;
+  hint4Used: boolean;
   onToggleDefinition: () => void;
   onToggleMechanism: () => void;
+  onToggleMaterial: () => void;
   onRevealLetter: () => void;
   onSurrender: () => void;
   onCheckAnswer: () => void;
@@ -23,11 +26,14 @@ export default function ClueActions({
   isSolved,
   definitionRevealed,
   mechanismRevealed,
+  materialRevealed,
   hint1Used,
   hint2Used,
   hint3Used,
+  hint4Used,
   onToggleDefinition,
   onToggleMechanism,
+  onToggleMaterial,
   onRevealLetter,
   onSurrender,
   onCheckAnswer,
@@ -36,8 +42,8 @@ export default function ClueActions({
 }: ClueActionsProps) {
   if (isSolved) return null;
 
-  // El botón de rendirse solo aparece si se usaron las 3 pistas progresivas
-  const canSurrender = hint1Used && hint2Used && hint3Used;
+  // El botón de rendirse solo aparece si se usaron las 4 pistas progresivas
+  const canSurrender = hint1Used && hint2Used && hint3Used && hint4Used;
 
   return (
     <div className="space-y-3.5 pt-2">
@@ -58,15 +64,15 @@ export default function ClueActions({
 
       {/* Controles de botones móviles */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-parchment-300">
-        {/* Pistas progresivas y ayudas */}
+        {/* Pistas - LAS 4 SIEMPRE DISPONIBLES DESDE EL INICIO */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Pista 1: Revelar Definición (siempre disponible de inicio) */}
+          {/* Pista 1: Revelar Definición - AMARILLO */}
           <button
             type="button"
             onClick={onToggleDefinition}
             className={`min-h-[42px] text-xs px-2.5 sm:px-3 py-2 rounded font-medium transition-all flex items-center justify-center gap-1.5 border active:scale-95 cursor-pointer shadow-2xs ${
               definitionRevealed
-                ? 'bg-sage-light text-sage-dark border-sage/50 font-semibold'
+                ? 'bg-amber-100 text-amber-950 border-amber-400 font-semibold'
                 : 'bg-white hover:bg-parchment-100 text-ink-800 border-ink-300'
             }`}
           >
@@ -76,47 +82,61 @@ export default function ClueActions({
             </span>
           </button>
 
-          {/* Pista 2: Revelar Juego de palabras / Anagrama (se desbloquea al pedir la Pista 1) */}
-          {hint1Used && (
-            <button
-              type="button"
-              onClick={onToggleMechanism}
-              className={`min-h-[42px] text-xs px-2.5 sm:px-3 py-2 rounded font-medium transition-all flex items-center justify-center gap-1.5 border active:scale-95 cursor-pointer shadow-2xs animate-in fade-in duration-300 ${
-                mechanismRevealed
-                  ? 'bg-orange-100 text-orange-950 border-orange-400 font-semibold'
-                  : 'bg-white hover:bg-parchment-100 text-ink-800 border-ink-300'
-              }`}
-            >
-              <Shuffle className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
-              <span>
-                {mechanismRevealed ? 'Ocultar Indicador' : 'Pista 2: Indicador'}
-              </span>
-            </button>
-          )}
+          {/* Pista 2: Revelar Indicador - ROJO */}
+          <button
+            type="button"
+            onClick={onToggleMechanism}
+            className={`min-h-[42px] text-xs px-2.5 sm:px-3 py-2 rounded font-medium transition-all flex items-center justify-center gap-1.5 border active:scale-95 cursor-pointer shadow-2xs ${
+              mechanismRevealed
+                ? 'bg-red-100 text-red-950 border-red-400 font-semibold'
+                : 'bg-white hover:bg-parchment-100 text-ink-800 border-ink-300'
+            }`}
+            title={mechanismRevealed ? 'Indicador revelado' : 'Pista 2: Indicador'}
+          >
+            <Shuffle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
+            <span>
+              {mechanismRevealed ? 'Ocultar Indicador' : 'Pista 2: Indicador'}
+            </span>
+          </button>
 
-          {/* Pista 3: Revelar Letra (se desbloquea al pedir la Pista 2, solo se permite 1 letra) */}
-          {hint2Used && (
-            <button
-              type="button"
-              onClick={onRevealLetter}
-              disabled={hint3Used}
-              className={`min-h-[42px] text-xs px-2.5 sm:px-3 py-2 border rounded font-medium transition-all flex items-center justify-center gap-1.5 shadow-2xs animate-in fade-in duration-300 ${
-                hint3Used
-                  ? 'bg-parchment-100 text-ink-500 border-parchment-300 cursor-not-allowed opacity-75'
-                  : 'border-ink-300 hover:border-ink-800 bg-white hover:bg-parchment-100 text-ink-800 active:scale-95 cursor-pointer'
-              }`}
-              title={hint3Used ? 'Ya has revelado una letra en este enigma' : 'Pista 3: Revelar una letra'}
-            >
-              {hint3Used ? (
-                <CheckCircle2 className="w-3.5 h-3.5 text-sage flex-shrink-0" />
-              ) : (
-                <Search className="w-3.5 h-3.5 text-ink-600 flex-shrink-0" />
-              )}
-              <span>{hint3Used ? 'Letra revelada' : 'Pista 3: Revelar letra'}</span>
-            </button>
-          )}
+          {/* Pista 3: Revelar Material - AZUL */}
+          <button
+            type="button"
+            onClick={onToggleMaterial}
+            className={`min-h-[42px] text-xs px-2.5 sm:px-3 py-2 rounded font-medium transition-all flex items-center justify-center gap-1.5 border active:scale-95 cursor-pointer shadow-2xs ${
+              materialRevealed
+                ? 'bg-blue-100 text-blue-950 border-blue-400 font-semibold'
+                : 'bg-white hover:bg-parchment-100 text-ink-800 border-ink-300'
+            }`}
+            title={materialRevealed ? 'Material revelado' : 'Pista 3: Material'}
+          >
+            <Package className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+            <span>
+              {materialRevealed ? 'Ocultar Material' : 'Pista 3: Material'}
+            </span>
+          </button>
 
-          {/* Botón de Rendirse (solo aparece cuando se han usado las 3 pistas) */}
+          {/* Pista 4: Revelar Letra (solo se permite 1 letra por enigma) */}
+          <button
+            type="button"
+            onClick={onRevealLetter}
+            disabled={hint4Used}
+            className={`min-h-[42px] text-xs px-2.5 sm:px-3 py-2 border rounded font-medium transition-all flex items-center justify-center gap-1.5 shadow-2xs ${
+              hint4Used
+                ? 'bg-parchment-100 text-ink-500 border-parchment-300 cursor-not-allowed opacity-75'
+                : 'border-ink-300 hover:border-ink-800 bg-white hover:bg-parchment-100 text-ink-800 active:scale-95 cursor-pointer'
+            }`}
+            title={hint4Used ? 'Ya has revelado una letra en este enigma' : 'Pista 4: Revelar una letra'}
+          >
+            {hint4Used ? (
+              <CheckCircle2 className="w-3.5 h-3.5 text-sage flex-shrink-0" />
+            ) : (
+              <Search className="w-3.5 h-3.5 text-ink-600 flex-shrink-0" />
+            )}
+            <span>{hint4Used ? 'Letra revelada' : 'Pista 4: Revelar letra'}</span>
+          </button>
+
+          {/* Botón de Rendirse (solo aparece cuando se han usado las 4 pistas) */}
           {canSurrender && (
             <button
               type="button"

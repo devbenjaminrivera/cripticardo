@@ -103,235 +103,212 @@ export default function AnatomyBreakdown({
   const showImage = Boolean(cryptic.imageUrl && !imageHasError);
 
   return (
-    <div className="mt-6 p-4 sm:p-6 bg-parchment-100 border border-ink-300 rounded-lg shadow-xs space-y-4 animate-in fade-in duration-300">
-      {/* Header Banner */}
-      <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-parchment-300">
+    <div className="mt-6 p-4 sm:p-6 bg-parchment-100 border border-ink-300 rounded-lg shadow-xs space-y-5 animate-in fade-in duration-300">
+      {/* Header sutil con badge de estado y stats discretas en esquina */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-parchment-300">
         <div className="flex items-center gap-2">
           {surrendered ? (
-            <span className="text-terracotta-dark font-bold text-base flex items-center gap-1.5">
-              <span>📖 Solución revelada:</span>
+            <span className="text-terracotta-dark font-medium text-sm flex items-center gap-1.5">
+              <span>📖 Solución revelada</span>
             </span>
           ) : (
-            <span className="text-sage-dark font-bold text-base sm:text-lg flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-sage flex-shrink-0" />
+            <span className="text-sage-dark font-medium text-sm sm:text-base flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-sage flex-shrink-0" />
               <span>¡Excelente descifrado!</span>
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {onPlayAgain && (
-            <button
-              type="button"
-              onClick={onPlayAgain}
-              className="flex-1 sm:flex-initial text-xs font-semibold px-3.5 py-2 bg-white hover:bg-parchment-50 text-ink-900 border border-ink-300 hover:border-ink-800 rounded transition-all flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer"
-              title="Resolver este enigma de nuevo desde cero"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-ink-700" />
-              <span>Resolver de nuevo</span>
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={handleShare}
-            className="flex-1 sm:flex-initial text-xs font-semibold px-4 py-2 bg-ink-900 text-parchment-50 hover:bg-ink-800 rounded transition-all flex items-center justify-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
-          >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-sage-light" />
-                <span>¡Copiado!</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Compartir</span>
-              </>
-            )}
-          </button>
-        </div>
+        {/* Stats discretas - solo desktop visible, en móvil van al final */}
+        {!surrendered && (
+          <div className="hidden sm:flex items-center gap-4 text-[11px] text-ink-500 font-mono">
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              <span>{formatTime(timeSpentSeconds)}</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <Lightbulb className="w-3 h-3 text-amber-600" />
+              <span>{hintsUsedCount === 0 ? 'Sin pistas' : `${hintsUsedCount} pistas`}</span>
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Resumen de estadísticas del jugador */}
-      {!surrendered && (
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="bg-white/80 p-2.5 rounded border border-ink-200 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-ink-600" />
-            <div>
-              <span className="text-ink-600 block text-[10px] uppercase font-mono">Tiempo</span>
-              <span className="font-mono font-bold text-ink-900">{formatTime(timeSpentSeconds)}</span>
-            </div>
+      {/* 1. IMAGEN PRIMERO - Centrada y grande, full width */}
+      {showImage && (
+        <div className="space-y-2">
+          <div
+            onClick={() => setIsZoomed(true)}
+            className="relative group cursor-pointer overflow-hidden rounded-xl border border-ink-300/80 bg-ink-900/5 p-1.5 shadow-2xs hover:shadow-md transition-all mx-auto max-w-full"
+            title="Haz clic para ver la imagen ampliada"
+            style={{ maxWidth: '100%' }}
+          >
+            {/* Esqueleto de carga suave */}
+            {!imageLoaded && (
+              <div className="w-full aspect-[4/3] sm:aspect-[3/2] bg-parchment-200/70 animate-pulse flex flex-col items-center justify-center gap-2 text-ink-400 rounded-lg">
+                <ImageIcon className="w-10 h-10 opacity-40" />
+                <span className="text-xs font-mono">Cargando ilustración...</span>
+              </div>
+            )}
+
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={cryptic.imageUrl}
+              alt={cryptic.imageCaption || `Ilustración de ${cryptic.answer}`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageHasError(true)}
+              className={`w-full h-auto max-h-[420px] sm:max-h-[520px] object-contain rounded-lg transition-all duration-300 group-hover:scale-[1.01] ${
+                imageLoaded ? 'block' : 'hidden'
+              }`}
+              loading="eager"
+            />
+
+            {/* Overlay para ampliar */}
+            {imageLoaded && (
+              <div className="absolute inset-0 bg-ink-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                <span className="bg-ink-900/90 text-parchment-50 text-xs sm:text-sm font-semibold px-3 py-1 rounded flex items-center gap-1.5 shadow-xs">
+                  <Maximize2 className="w-4 h-4" />
+                  <span>Ampliar imagen</span>
+                </span>
+              </div>
+            )}
           </div>
-          <div className="bg-white/80 p-2.5 rounded border border-ink-200 flex items-center gap-2">
-            <Lightbulb className="w-4 h-4 text-amber-600" />
-            <div>
-              <span className="text-ink-600 block text-[10px] uppercase font-mono">Pistas</span>
-              <span className="font-mono font-bold text-ink-900">
-                {hintsUsedCount === 0 ? 'Sin pistas' : `${hintsUsedCount} usadas`}
-              </span>
-            </div>
-          </div>
+
+          <p className="text-[11px] text-ink-600 font-serif italic text-center max-w-2xl mx-auto">
+            {cryptic.imageCaption ? cryptic.imageCaption : 'Toca la imagen para ampliar'}
+          </p>
         </div>
       )}
 
-      {/* Contenido anatómico */}
-      <div className="space-y-3.5 text-sm text-ink-800">
-        {showImage ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-            {/* Columna Izquierda: Solución, Definición directa, Indicador */}
-            <div className="grid grid-cols-[auto_1fr] sm:block sm:space-y-3 gap-3 items-start">
-              {/* Solución (Izquierda en móvil / Fila 1 en desktop) */}
-              <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
-                <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
-                  Solución:
-                </span>
-                <span className="font-mono font-bold tracking-widest text-ink-900 bg-white px-2.5 sm:px-3 py-1 rounded border border-ink-300 text-sm sm:text-base inline-block w-fit shadow-2xs">
-                  {cryptic.answer}
-                </span>
-              </div>
+      {/* 2. EXPLICACIÓN - Full width, destacada */}
+      <div className="bg-white/60 border border-parchment-300 rounded-lg p-4 sm:p-5 space-y-2">
+        <span className="text-[10px] uppercase font-mono tracking-wider text-ink-600 block">
+          Explicación del mecanismo
+        </span>
+        <p className="text-ink-800 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+          {cryptic.mechanismText}
+        </p>
+      </div>
 
-              {/* Definición e Indicador (Derecha de la solución en móvil / Filas 2 y 3 en desktop) */}
-              <div className="space-y-2 sm:space-y-3 border-l border-parchment-300/80 pl-3 sm:border-l-0 sm:pl-0">
-                <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
-                  <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
-                    <span className="sm:hidden">Definición:</span>
-                    <span className="hidden sm:inline">Definición directa:</span>
-                  </span>
-                  <span className="text-sage-dark font-semibold bg-sage-light/60 px-2 py-0.5 rounded border border-sage/30 text-xs sm:text-sm inline-block w-fit">
-                    «{cryptic.defPart}»
-                  </span>
-                </div>
-
-                {cryptic.mechanismPart && (
-                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
-                    <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
-                      Indicador{cryptic.mechanismPart.includes(',') ? 'es' : ''}:
-                    </span>
-                    <div className="flex flex-wrap gap-1">
-                      {cryptic.mechanismPart
-                        .split(',')
-                        .map((m) => m.trim())
-                        .filter(Boolean)
-                        .map((part, idx) => (
-                          <span
-                            key={idx}
-                            className="text-orange-950 font-semibold bg-orange-100 px-2 py-0.5 rounded border border-orange-300 text-xs sm:text-sm inline-block"
-                          >
-                            «{part}»
-                          </span>
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Columna Derecha (Mitad derecha de la tarjeta): Ilustración centrada */}
-            <div className="flex flex-col items-center justify-center w-full">
-              <div
-                onClick={() => setIsZoomed(true)}
-                className="relative group cursor-pointer overflow-hidden rounded-lg border border-ink-300/80 bg-ink-900/5 p-1 shadow-2xs hover:shadow-md transition-all inline-flex items-center justify-center max-h-56 sm:max-h-64"
-                title="Haz clic para ver la imagen ampliada"
-              >
-                {/* Esqueleto de carga suave */}
-                {!imageLoaded && (
-                  <div className="w-36 h-48 sm:w-44 sm:h-56 bg-parchment-200/70 animate-pulse flex flex-col items-center justify-center gap-1.5 text-ink-400 rounded">
-                    <ImageIcon className="w-6 h-6 opacity-40" />
-                    <span className="text-[10px] font-mono">Cargando...</span>
-                  </div>
-                )}
-
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={cryptic.imageUrl}
-                  alt={cryptic.imageCaption || `Ilustración de ${cryptic.answer}`}
-                  onLoad={() => setImageLoaded(true)}
-                  onError={() => setImageHasError(true)}
-                  className={`max-h-52 sm:max-h-60 w-auto max-w-[220px] sm:max-w-[270px] object-contain rounded transition-all duration-300 group-hover:scale-[1.02] ${
-                    imageLoaded ? 'block' : 'hidden'
-                  }`}
-                  loading="lazy"
-                />
-
-                {/* Overlay para ampliar */}
-                {imageLoaded && (
-                  <div className="absolute inset-0 bg-ink-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded">
-                    <span className="bg-ink-900/90 text-parchment-50 text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1 shadow-xs">
-                      <Maximize2 className="w-3 h-3" />
-                      <span>Ampliar</span>
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <span className="text-[10px] text-ink-600 font-serif italic mt-1 text-center max-w-[240px] truncate">
-                {cryptic.imageCaption ? cryptic.imageCaption : 'Toca la imagen para ampliar'}
+      {/* 3. SOLUCIÓN, DEFINICIÓN Y MATERIAL */}
+      <div className="space-y-3">
+        {/* Solución - En PC ocupa todo el ancho */}
+        <div className="bg-white/80 border border-ink-300 rounded-lg px-4 py-3 sm:px-5 sm:py-3 w-full shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <span className="font-semibold text-ink-900 text-xs sm:text-sm sm:min-w-[70px] flex-shrink-0">
+              Solución:
+            </span>
+            <span className="font-mono font-bold tracking-widest text-ink-900 bg-parchment-100 px-3 py-1.5 rounded border border-ink-300 text-sm sm:text-base inline-flex items-center gap-2 shadow-2xs whitespace-nowrap">
+              {cryptic.answer}
+              <span className="text-[10px] text-ink-500 font-normal tracking-normal">
+                ({cryptic.letterCount} {cryptic.letterCount === 1 ? 'letra' : 'letras'})
               </span>
-            </div>
+            </span>
           </div>
-        ) : (
-          /* Disposición si no tiene imagen: en móvil Solución a la izquierda y Definición + Indicadores a la derecha */
-          <div className="grid grid-cols-[auto_1fr] sm:block sm:space-y-3 gap-3 items-start">
-            {/* Solución (Izquierda en móvil / Fila 1 en desktop) */}
-            <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
-              <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
-                Solución:
-              </span>
-              <span className="font-mono font-bold tracking-widest text-ink-900 bg-white px-2.5 sm:px-3 py-1 rounded border border-ink-300 text-sm sm:text-base inline-block w-fit shadow-2xs">
-                {cryptic.answer}
-              </span>
-            </div>
+        </div>
 
-            {/* Definición e Indicador (Derecha de la solución en móvil / Filas 2 y 3 en desktop) */}
-            <div className="space-y-2 sm:space-y-3 border-l border-parchment-300/80 pl-3 sm:border-l-0 sm:pl-0">
-              <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
-                <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
-                  <span className="sm:hidden">Definición:</span>
-                  <span className="hidden sm:inline">Definición directa:</span>
-                </span>
-                <span className="text-sage-dark font-semibold bg-sage-light/60 px-2 py-0.5 rounded border border-sage/30 text-xs sm:text-sm inline-block w-fit">
-                  «{cryptic.defPart}»
-                </span>
-              </div>
+        {/* Abajo: Definición y Material (ocupando mitad y mitad en PC; apilados en móvil) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Definición directa - AMARILLO */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 sm:px-5 sm:py-3">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-amber-900 block mb-1">
+              Definición directa
+            </span>
+            <p className="text-amber-950 font-semibold text-sm sm:text-base leading-snug break-words">
+              «{cryptic.defPart.replace(/^[«"']|[»"']$/g, '')}»
+            </p>
+          </div>
 
-              {cryptic.mechanismPart && (
-                <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
-                  <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
-                    Indicador{cryptic.mechanismPart.includes(',') ? 'es' : ''}:
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {cryptic.mechanismPart
+          {/* Material (si existe) - AZUL */}
+          {cryptic.materialPart && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 sm:px-5 sm:py-3">
+              <span className="text-[10px] uppercase font-mono tracking-wider text-blue-900 block mb-1">
+                Material
+              </span>
+              <p className="text-blue-950 font-semibold text-sm sm:text-base leading-snug break-words">
+                {cryptic.materialPart.includes(',')
+                  ? cryptic.materialPart
                       .split(',')
-                      .map((m) => m.trim())
-                      .filter(Boolean)
-                      .map((part, idx) => (
-                        <span
-                          key={idx}
-                          className="text-orange-950 font-semibold bg-orange-100 px-2 py-0.5 rounded border border-orange-300 text-xs sm:text-sm inline-block"
-                        >
-                          «{part}»
-                        </span>
-                      ))}
-                  </div>
-                </div>
-              )}
+                      .map((m) => `«${m.trim().replace(/^[«"']|[»"']$/g, '')}»`)
+                      .join(', ')
+                  : `«${cryptic.materialPart.replace(/^[«"']|[»"']$/g, '')}»`}
+              </p>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Explicación (a todo el ancho por debajo) */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 pt-2 border-t border-parchment-300/70">
-          <span className="font-semibold text-ink-900 sm:min-w-32 text-xs sm:text-sm">
-            Explicación:
-          </span>
-          <span className="text-ink-700 bg-white/70 p-3 rounded border border-parchment-300 text-xs sm:text-sm leading-relaxed flex-1">
-            {cryptic.mechanismText}
-          </span>
+          {/* Indicadores (si existen) - ROJO */}
+          {cryptic.mechanismPart && (
+            <div className={`bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 sm:px-5 sm:py-3 ${
+              cryptic.materialPart ? 'sm:col-span-2' : ''
+            }`}>
+              <span className="text-[10px] uppercase font-mono tracking-wider text-red-900 block mb-1">
+                Indicador{cryptic.mechanismPart.includes(',') ? 'es' : ''}
+              </span>
+              <p className="text-red-950 font-semibold text-sm sm:text-base leading-snug break-words">
+                {cryptic.mechanismPart.includes(',')
+                  ? cryptic.mechanismPart
+                      .split(',')
+                      .map((m) => `«${m.trim().replace(/^[«"']|[»"']$/g, '')}»`)
+                      .join(', ')
+                  : `«${cryptic.mechanismPart.replace(/^[«"']|[»"']$/g, '')}»`}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="pt-1 text-[11px] text-ink-600 text-center sm:text-left italic border-t border-parchment-300/80">
-        Siguiente enigma mañana a las 00:00 (hora de Santiago de Chile).
+      {/* 4. BOTONES DE ACCIÓN AL FINAL - Full width en móvil, centrados en desktop */}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 border-t border-parchment-300/70">
+        {onPlayAgain && (
+          <button
+            type="button"
+            onClick={onPlayAgain}
+            className="w-full sm:w-auto text-sm font-semibold px-5 py-2.5 bg-white hover:bg-parchment-50 text-ink-900 border border-ink-300 hover:border-ink-800 rounded-lg transition-all flex items-center justify-center gap-2 shadow-2xs active:scale-[0.98] cursor-pointer"
+            title="Resolver este enigma de nuevo desde cero"
+          >
+            <RotateCcw className="w-4 h-4 text-ink-700" />
+            <span>Resolver de nuevo</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={handleShare}
+          className="w-full sm:w-auto text-sm font-semibold px-5 py-2.5 bg-ink-900 text-parchment-50 hover:bg-ink-800 rounded-lg transition-all flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] cursor-pointer"
+        >
+          {copied ? (
+            <>
+              <Check className="w-4 h-4 text-sage-light" />
+              <span>¡Copiado!</span>
+            </>
+          ) : (
+            <>
+              <Share2 className="w-4 h-4" />
+              <span>Compartir resultado</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Stats en móvil (al final) + nota final */}
+      <div className="space-y-2 pt-2 border-t border-parchment-300/50">
+        {/* Stats móviles - sutiles */}
+        {!surrendered && (
+          <div className="sm:hidden flex items-center justify-center gap-4 text-[11px] text-ink-500 font-mono">
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{formatTime(timeSpentSeconds)}</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+              <span>{hintsUsedCount === 0 ? 'Sin pistas' : `${hintsUsedCount} pistas`}</span>
+            </span>
+          </div>
+        )}
+
+        <p className="text-[10px] text-ink-500 text-center italic">
+          Siguiente enigma mañana a las 00:00 (hora de Santiago de Chile).
+        </p>
       </div>
 
       {/* Modal de imagen en pantalla completa (Lightbox optimizado) */}
@@ -343,7 +320,7 @@ export default function AnatomyBreakdown({
           onClick={() => setIsZoomed(false)}
         >
           <div
-            className="relative max-w-3xl w-full max-h-[92vh] bg-parchment-50 p-3 sm:p-4 rounded-xl shadow-2xl border border-ink-300 flex flex-col items-center overflow-hidden"
+            className="relative max-w-4xl w-full max-h-[92vh] bg-parchment-50 p-3 sm:p-4 rounded-xl shadow-2xl border border-ink-300 flex flex-col items-center overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Barra superior del modal segura para móviles */}

@@ -45,6 +45,7 @@ export default function ClueEditorForm({
   const [mechanismPart, setMechanismPart] = useState(
     initialData?.mechanismPart || ''
   );
+  const [materialPart, setMaterialPart] = useState(initialData?.materialPart || '');
   const [mechanismText, setMechanismText] = useState(
     initialData?.mechanismText || ''
   );
@@ -99,6 +100,7 @@ export default function ClueEditorForm({
     difficulty,
     defPart: defPart || '',
     mechanismPart: mechanismPart || '',
+    materialPart: materialPart || '',
     mechanismText: mechanismText || 'Explicación del juego de palabras...',
     imageUrl: imageUrl.trim() || undefined,
     imageCaption: imageCaption.trim() || undefined,
@@ -173,6 +175,7 @@ export default function ClueEditorForm({
       difficulty,
       defPart: defPart.trim(),
       mechanismPart: mechanismPart.trim(),
+      materialPart: materialPart.trim(),
       mechanismText: mechanismText.trim(),
       imageUrl: imageUrl.trim() || undefined,
       imageCaption: imageCaption.trim() || undefined,
@@ -343,12 +346,12 @@ export default function ClueEditorForm({
                         key={i}
                         className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${
                           inClue
-                            ? 'bg-orange-100 text-orange-950 border-orange-300'
-                            : 'bg-amber-50 text-amber-900 border-amber-300'
+                            ? 'bg-red-100 text-red-950 border-red-300'
+                            : 'bg-red-50 text-red-900 border-red-300'
                         }`}
                         title={
                           inClue
-                            ? 'Encontrado en el enunciado (se resaltará en naranja)'
+                            ? 'Encontrado en el enunciado (se resaltará en rojo)'
                             : 'Atención: no coincide textualmente con el enunciado'
                         }
                       >
@@ -369,11 +372,28 @@ export default function ClueEditorForm({
               )}
 
               <p className="text-[11px] text-ink-600 italic">
-                Separa con coma (,) si hay más de un indicador. Cada uno se resaltará individualmente en naranja al pedir la Pista 2.
+                Separa con coma (,) si hay más de un indicador. Cada uno se resaltará individualmente en rojo al pedir la Pista 2.
               </p>
             </div>
 
-            {/* 5. Explicación de la resolución */}
+            {/* 5. Material (Palabras con las que juega el usuario) */}
+            <div className="space-y-1">
+              <label className="text-xs uppercase tracking-wider font-semibold text-ink-700 block">
+                Material
+              </label>
+              <input
+                type="text"
+                value={materialPart}
+                placeholder="Ej: ROMA (palabra base para anagrama), AGUA FUEGO (elementos a combinar)"
+                onChange={(e) => setMaterialPart(e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-white border border-ink-300 rounded text-ink-900 focus:outline-none focus:border-ink-900 font-sans"
+              />
+              <p className="text-[11px] text-ink-600 italic">
+                La(s) palabra(s) o elemento(s) base con los que el jugador opera (anagrama, combinación, etc.). Se resaltará en azul al pedir la Pista 3.
+              </p>
+            </div>
+
+            {/* 6. Explicación de la resolución */}
             <div className="space-y-1">
               <label className="text-xs uppercase tracking-wider font-semibold text-ink-700 block">
                 Explicación de la resolución
@@ -615,15 +635,20 @@ export default function ClueEditorForm({
 
           {previewTab === 'game' ? (
             <div className="space-y-3">
-              <div className="flex items-center gap-1.5 text-[11px]">
+              <div className="flex items-center gap-1.5 text-[11px] flex-wrap">
                 {Boolean(defPart) && (
-                  <span className="bg-sage-light text-sage-dark px-2 py-0.5 rounded border border-sage/40 font-medium">
-                    Definición (verde)
+                  <span className="bg-amber-100 text-amber-950 px-2 py-0.5 rounded border border-amber-300 font-medium">
+                    Definición (amarillo)
                   </span>
                 )}
                 {Boolean(mechanismPart) && (
-                  <span className="bg-orange-100 text-orange-950 px-2 py-0.5 rounded border border-orange-300 font-medium">
-                    Indicador{detectedIndicators.length > 1 ? 'es' : ''} (naranja)
+                  <span className="bg-red-100 text-red-950 px-2 py-0.5 rounded border border-red-300 font-medium">
+                    Indicador{detectedIndicators.length > 1 ? 'es' : ''} (rojo)
+                  </span>
+                )}
+                {Boolean(materialPart) && (
+                  <span className="bg-blue-100 text-blue-950 px-2 py-0.5 rounded border border-blue-300 font-medium">
+                    Material (azul)
                   </span>
                 )}
               </div>
@@ -632,6 +657,7 @@ export default function ClueEditorForm({
                 cryptic={previewCryptic}
                 showDefinition={Boolean(defPart)}
                 showMechanism={Boolean(mechanismPart)}
+                showMaterial={Boolean(materialPart)}
               />
 
               <div className="bg-parchment-50 border border-ink-300 rounded-lg p-5 shadow-xs space-y-3">

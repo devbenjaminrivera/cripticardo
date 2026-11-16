@@ -36,33 +36,80 @@ export default function LetterGrid({
       if (autoFocus && !hasFocusedRef.current) {
         hasFocusedRef.current = true;
         const firstEmpty = letters.findIndex((l) => !l);
-        const targetIndex = firstEmpty !== -1 ? firstEmpty : 0;
-        inputRefs.current[targetIndex]?.focus();
+        let targetIndex = firstEmpty !== -1 ? firstEmpty : 0;
+        // Saltar celdas reveladas
+        while (targetIndex < length && revealedIndices.includes(targetIndex)) {
+          targetIndex++;
+        }
+        if (targetIndex < length) inputRefs.current[targetIndex]?.focus();
       }
     } else {
       hasFocusedRef.current = false;
     }
-  }, [length, autoFocus, isSolved, letters]);
+  }, [length, autoFocus, isSolved, letters, revealedIndices]);
+
+  // Helper: encontrar el siguiente índice editable (no revelado) en una dirección
+  const findNextEditable = (startIndex: number, direction: 1 | -1): number | null => {
+    let idx = startIndex + direction;
+    while (idx >= 0 && idx < length) {
+      if (!revealedIndices.includes(idx)) return idx;
+      idx += direction;
+    }
+    return null;
+  };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    const isRevealed = revealedIndices.includes(index);
     if (isSolved) return;
+
+    // Navegación con flechas: saltar celdas reveladas
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const next = findNextEditable(index, -1);
+      if (next !== null) inputRefs.current[next]?.focus();
+      return;
+    }
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = findNextEditable(index, 1);
+      if (next !== null) inputRefs.current[next]?.focus();
+      return;
+    }
+    if (e.key === 'Tab') {
+      // Dejar que el navegador maneje Tab naturalmente
+      return;
+    }
+
+    // En celdas reveladas: bloquear TODA edición (Backspace, Delete, letras, etc.)
+    if (isRevealed) {
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        // Saltar a la celda editable anterior/siguiente
+        const next = findNextEditable(index, e.key === 'Backspace' ? -1 : 1);
+        if (next !== null) inputRefs.current[next]?.focus();
+        return;
+      }
+      // Bloquear cualquier otra tecla de entrada
+      e.preventDefault();
+      return;
+    }
 
     if (e.key === 'Backspace') {
       e.preventDefault();
       if (letters[index]) {
-        // Si la celda actual tiene letra, borrarla
         onChangeLetter(index, '');
       } else if (index > 0) {
-        // Retroceder a la anterior y borrarla
-        onChangeLetter(index - 1, '');
-        inputRefs.current[index - 1]?.focus();
+        const prev = findNextEditable(index, -1);
+        if (prev !== null) {
+          onChangeLetter(prev, '');
+          inputRefs.current[prev]?.focus();
+        }
       }
-    } else if (e.key === 'ArrowLeft') {
+    } else if (e.key === 'Delete') {
       e.preventDefault();
-      if (index > 0) inputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      if (index < length - 1) inputRefs.current[index + 1]?.focus();
+      if (letters[index]) {
+        onChangeLetter(index, '');
+      }
     } else if (e.key === 'Enter') {
       e.preventDefault();
       onEnterPress();
@@ -70,16 +117,17 @@ export default function LetterGrid({
   };
 
   const handleInput = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isSolved) return;
+    const isRevealed = revealedIndices.includes(index);
+    if (isSolved || isRevealed) return; // Bloquear completamente input en celdas reveladas
     const value = e.target.value.toUpperCase();
     const lastChar = value.slice(-1);
 
     // Solo admitir letras válidas
     if (/^[A-ZÁÉÍÓÚÑ]$/.test(lastChar)) {
       onChangeLetter(index, lastChar);
-      if (index < length - 1) {
-        inputRefs.current[index + 1]?.focus();
-      }
+      // Avanzar a la siguiente celda editable
+      const next = findNextEditable(index, 1);
+      if (next !== null) inputRefs.current[next]?.focus();
     } else if (value === '') {
       onChangeLetter(index, '');
     }
@@ -96,12 +144,23 @@ export default function LetterGrid({
     if (!pasted) return;
 
     const chars = pasted.slice(0, length).split('');
-    chars.forEach((char, i) => {
-      onChangeLetter(i, char);
+    let targetIdx = 0;
+    chars.forEach((char) => {
+      // Buscar la siguiente celda editable (no revelada)
+      while (targetIdx < length && revealedIndices.includes(targetIdx)) {
+        targetIdx++;
+      }
+      if (targetIdx < length) {
+        onChangeLetter(targetIdx, char);
+        targetIdx++;
+      }
     });
 
-    const nextIndex = Math.min(chars.length, length - 1);
-    inputRefs.current[nextIndex]?.focus();
+    // Enfocar la siguiente celda editable después del pegado
+    while (targetIdx < length && revealedIndices.includes(targetIdx)) {
+      targetIdx++;
+    }
+    if (targetIdx < length) inputRefs.current[targetIdx]?.focus();
   };
 
   // Tamaño dinámico adaptable a pantallas móviles

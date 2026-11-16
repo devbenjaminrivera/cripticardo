@@ -14,6 +14,7 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { generateShareText } from '@/lib/playerStorage';
+import ImageZoom from '@/components/ui/ImageZoom';
 
 interface AnatomyBreakdownProps {
   cryptic: Cryptic;
@@ -34,26 +35,6 @@ export default function AnatomyBreakdown({
   const [isZoomed, setIsZoomed] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageHasError, setImageHasError] = useState(false);
-
-  // Soporte para cerrar modal con Escape y bloquear scroll del fondo
-  useEffect(() => {
-    if (!isZoomed) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsZoomed(false);
-      }
-    };
-
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isZoomed]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -140,7 +121,7 @@ export default function AnatomyBreakdown({
           <div
             onClick={() => setIsZoomed(true)}
             className="relative group cursor-pointer overflow-hidden rounded-xl border border-ink-300/80 bg-ink-900/5 p-1.5 shadow-2xs hover:shadow-md transition-all mx-auto max-w-full"
-            title="Haz clic para ver la imagen ampliada"
+            title="Haz clic para ver la imagen ampliada con zoom"
             style={{ maxWidth: '100%' }}
           >
             {/* Esqueleto de carga suave */}
@@ -168,14 +149,14 @@ export default function AnatomyBreakdown({
               <div className="absolute inset-0 bg-ink-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
                 <span className="bg-ink-900/90 text-parchment-50 text-xs sm:text-sm font-semibold px-3 py-1 rounded flex items-center gap-1.5 shadow-xs">
                   <Maximize2 className="w-4 h-4" />
-                  <span>Ampliar imagen</span>
+                  <span>Ver imagen con zoom</span>
                 </span>
               </div>
             )}
           </div>
 
           <p className="text-[11px] text-ink-600 font-serif italic text-center max-w-2xl mx-auto">
-            {cryptic.imageCaption ? cryptic.imageCaption : 'Toca la imagen para ampliar'}
+            {cryptic.imageCaption ? cryptic.imageCaption : 'Toca la imagen para verla con zoom'}
           </p>
         </div>
       )}
@@ -311,63 +292,14 @@ export default function AnatomyBreakdown({
         </p>
       </div>
 
-      {/* Modal de imagen en pantalla completa (Lightbox optimizado) */}
-      {isZoomed && cryptic.imageUrl && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 bg-ink-900/80 flex items-center justify-center p-3 sm:p-6 backdrop-blur-xs animate-in fade-in duration-200"
-          onClick={() => setIsZoomed(false)}
-        >
-          <div
-            className="relative max-w-4xl w-full max-h-[92vh] bg-parchment-50 p-3 sm:p-4 rounded-xl shadow-2xl border border-ink-300 flex flex-col items-center overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Barra superior del modal segura para móviles */}
-            <div className="w-full flex items-center justify-between pb-2 mb-2 border-b border-parchment-300 text-ink-800 gap-2">
-              <div className="min-w-0 pr-2">
-                <span className="font-sans font-semibold text-xs sm:text-sm text-ink-900 block truncate">
-                  {cryptic.imageCaption ? cryptic.imageCaption : `Ilustración: ${cryptic.answer}`}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsZoomed(false)}
-                className="p-1 rounded text-ink-700 hover:text-ink-950 hover:bg-parchment-200 transition-colors cursor-pointer flex-shrink-0"
-                title="Cerrar (Escape)"
-                aria-label="Cerrar ampliación"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Contenedor de imagen ampliada */}
-            <div className="relative flex items-center justify-center w-full flex-1 min-h-0 overflow-auto bg-parchment-100/60 rounded-lg p-2 border border-parchment-300">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={cryptic.imageUrl}
-                alt={cryptic.imageCaption || `Ilustración de ${cryptic.answer}`}
-                className="max-h-[72vh] w-auto max-w-full object-contain rounded select-none shadow-xs"
-              />
-            </div>
-
-            {/* Pie con nombre de la obra en Inter y atajo de cierre */}
-            <div className="pt-2 text-[11px] font-sans text-ink-600 text-center space-y-0.5">
-              {cryptic.imageCaption && (
-                <p className="font-sans text-xs text-ink-900 font-medium">
-                  {cryptic.imageCaption}
-                </p>
-              )}
-              <p className="text-[10px] text-ink-500">
-                <span className="hidden sm:inline">
-                  Presiona <kbd className="px-1.5 py-0.5 bg-parchment-200 border border-ink-300 rounded font-mono text-[10px]">Esc</kbd> o haz clic fuera para cerrar
-                </span>
-                <span className="sm:hidden">Toca fuera para cerrar</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de imagen con zoom completo (nuevo componente ImageZoom) */}
+      <ImageZoom
+        src={cryptic.imageUrl || ''}
+        alt={cryptic.imageCaption || `Ilustración de ${cryptic.answer}`}
+        caption={cryptic.imageCaption}
+        isOpen={isZoomed && showImage}
+        onClose={() => setIsZoomed(false)}
+      />
     </div>
   );
 }

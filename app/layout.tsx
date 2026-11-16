@@ -31,10 +31,78 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cripticardo.vercel.app'),
-  title: "Cripticardo | El Críptico Diario",
-  description: "Resuelve el enigma verbal del día. Pistas crípticas, juegos de palabras y acertijos con anatomía explicada paso a paso.",
-  authors: [{ name: "Daniel Fajardo" }],
+  title: {
+    default: "Cripticardo | El Críptico Diario de Música Antigua",
+    template: "%s | Cripticardo",
+  },
+  description: "Resuelve el enigma verbal diario de música antigua. Pistas crípticas, anagramas, juegos de palabras y acertijos con anatomía explicada paso a paso. Nuevo críptico cada día.",
+  keywords: [
+    "críptico",
+    "enigmas",
+    "juegos de palabras",
+    "música antigua",
+    "anagramas",
+    "acertijos diarios",
+    "puzzles verbales",
+    "Daniel Fajardo",
+    "pasatiempos",
+    "ejercicio mental",
+  ],
+  authors: [{ name: "Daniel Fajardo", url: "https://daniel-fajardo.com" }],
   creator: "Daniel Fajardo",
+  publisher: "Cripticardo",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: '/',
+    languages: {
+      'es': '/',
+      'es-CL': '/',
+      'x-default': '/',
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_CL',
+    url: '/',
+    siteName: 'Cripticardo',
+    title: 'Cripticardo | El Críptico Diario de Música Antigua',
+    description: 'Resuelve el enigma verbal del día. Pistas crípticas, juegos de palabras y acertijos con anatomía explicada paso a paso.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Cripticardo - Críptico diario de música antigua',
+        type: 'image/png',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Cripticardo | El Críptico Diario de Música Antigua',
+    description: 'Resuelve el enigma verbal del día. Pistas crípticas, juegos de palabras y acertijos con anatomía explicada paso a paso.',
+    images: ['/og-image.png'],
+    creator: '@daniel_fajardo',
+    site: '@cripticardo',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: "kKjZDt8psR06q1JRmuQO25obNJXeMi2FAIkW38zW6cU",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32" },
@@ -43,10 +111,15 @@ export const metadata: Metadata = {
     apple: [
       { url: "/apple-icon.png", sizes: "192x192", type: "image/png" },
     ],
+    shortcut: "/favicon.ico",
+    other: [
+      {
+        rel: "manifest",
+        url: "/manifest.json",
+      },
+    ],
   },
-  verification: {
-    google: "kKjZDt8psR06q1JRmuQO25obNJXeMi2FAIkW38zW6cU",
-  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

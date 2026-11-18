@@ -55,6 +55,7 @@ export function getTimeUntilNextChileMidnight(): { hours: number; minutes: numbe
 }
 
 // Calcula automáticamente la siguiente fecha disponible en Chile (sin solapar días)
+// Usa localStorage (función síncrona para compatibilidad)
 export function getNextAvailableDate(): string {
   const all = getAllCryptics();
   const existingDates = new Set(all.map((c) => c.scheduledDate));
@@ -77,6 +78,47 @@ export function getNextAvailableDate(): string {
       return dateStr;
     }
   }
+}
+
+// Calcula la siguiente fecha disponible consultando Supabase (asíncrona, más fiable)
+export async function getNextAvailableDateAsync(): Promise<string> {
+  const chileToday = getChileDateString();
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('cryptics')
+        .select('scheduled_date')
+        .eq('status', 'published');
+
+      if (!error && data) {
+        const existingDates = new Set(data.map((c) => c.scheduled_date));
+
+        if (!existingDates.has(chileToday)) {
+          return chileToday;
+        }
+
+        const [year, month, day] = chileToday.split('-').map(Number);
+        const cursor = new Date(year, month - 1, day);
+
+        while (true) {
+          cursor.setDate(cursor.getDate() + 1);
+          const y = cursor.getFullYear();
+          const m = String(cursor.getMonth() + 1).padStart(2, '0');
+          const d = String(cursor.getDate()).padStart(2, '0');
+          const dateStr = `${y}-${m}-${d}`;
+          if (!existingDates.has(dateStr)) {
+            return dateStr;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error consultando Supabase para fecha disponible, usando localStorage:', e);
+    }
+  }
+
+  // Fallback a localStorage
+  return getNextAvailableDate();
 }
 
 // Convertidor de base de datos snake_case a frontend camelCase

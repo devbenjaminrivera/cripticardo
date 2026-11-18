@@ -12,6 +12,7 @@ import {
   deleteCrypticAsync,
   formatDatePretty,
   getTodayDateString,
+  getNextAvailableDateAsync,
 } from '@/lib/dataService';
 import { Cryptic } from '@/lib/types';
 import {
@@ -30,6 +31,7 @@ export default function AdminPanelClient() {
   const [editingCryptic, setEditingCryptic] = useState<Cryptic | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [prefillDate, setPrefillDate] = useState<string | null>(null);
 
   const loadCryptics = useCallback(async () => {
     try {
@@ -166,7 +168,11 @@ export default function AdminPanelClient() {
           <div className="flex items-center gap-2 flex-wrap">
             {!isCreating && !editingCryptic && (
               <button
-                onClick={() => setIsCreating(true)}
+                onClick={async () => {
+                  const nextDate = await getNextAvailableDateAsync();
+                  setPrefillDate(nextDate);
+                  setIsCreating(true);
+                }}
                 className="px-4 py-2 bg-ink-900 hover:bg-ink-800 text-parchment-50 text-xs font-semibold rounded shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4 text-parchment-300" />
@@ -234,8 +240,15 @@ export default function AdminPanelClient() {
         {/* Formulario de Creación / Edición */}
         {isCreating ? (
           <ClueEditorForm
-            onSave={handleSave}
-            onCancel={() => setIsCreating(false)}
+            initialData={prefillDate ? { scheduledDate: prefillDate } as any : undefined}
+            onSave={(data) => {
+              handleSave(data);
+              setPrefillDate(null);
+            }}
+            onCancel={() => {
+              setIsCreating(false);
+              setPrefillDate(null);
+            }}
           />
         ) : editingCryptic ? (
           <ClueEditorForm

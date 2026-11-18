@@ -32,7 +32,7 @@ export default function ClueEditorForm({
   onCancel,
 }: ClueEditorFormProps) {
   // Fecha asignada automáticamente al siguiente día libre en Chile si es nuevo
-  const [scheduledDate] = useState<string>(
+  const [scheduledDate, setScheduledDate] = useState<string>(
     initialData?.scheduledDate || getNextAvailableDate()
   );
 
@@ -206,17 +206,21 @@ export default function ClueEditorForm({
           onSubmit={handleSubmit}
           className="bg-parchment-50 border border-ink-300 rounded-lg p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs"
         >
-          {/* Aviso de Fecha Automática */}
-          <div className="bg-parchment-200/70 border border-parchment-300 rounded p-3 text-xs text-ink-800 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-terracotta flex-shrink-0" />
-            <div>
-              <span className="font-semibold block">
-                Fecha programada: {formatDatePretty(scheduledDate)}
-              </span>
-              <span className="text-ink-600 text-[11px]">
-                Asignada automáticamente para el próximo día libre (hora de Chile).
-              </span>
-            </div>
+          {/* Selector de Fecha Programada */}
+          <div className="space-y-1">
+            <label className="text-xs uppercase tracking-wider font-semibold text-ink-700 block flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-terracotta" />
+              <span>Fecha programada</span>
+            </label>
+            <input
+              type="date"
+              value={scheduledDate}
+              onChange={(e) => setScheduledDate(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-white border border-ink-300 rounded text-ink-900 focus:outline-none focus:border-ink-900 font-mono"
+            />
+            <p className="text-[11px] text-ink-600 italic">
+              El críptico se publicará en esta fecha (zona horaria de Chile). Si la fecha ya está ocupada, el sistema avisará al guardar.
+            </p>
           </div>
 
           {/* 1. Enunciado */}

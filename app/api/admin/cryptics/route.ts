@@ -88,7 +88,14 @@ export async function POST(request: NextRequest) {
         error = retry.error;
       }
 
+      // Manejo específico de error de clave duplicada (fecha ya ocupada)
       if (error) {
+        if (error.code === '23505' || error.message?.includes('cryptics_scheduled_date_key')) {
+          return NextResponse.json(
+            { error: `Ya existe un críptico programado para la fecha ${body.scheduledDate}. Por favor selecciona una fecha libre.` },
+            { status: 409 }
+          );
+        }
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
 
@@ -129,7 +136,14 @@ export async function POST(request: NextRequest) {
         error = retry.error;
       }
 
+      // Manejo específico de error de clave duplicada (fecha ya ocupada)
       if (error) {
+        if (error.code === '23505' || error.message?.includes('cryptics_scheduled_date_key')) {
+          return NextResponse.json(
+            { error: `Ya existe un críptico programado para la fecha ${body.scheduledDate}. Por favor selecciona una fecha libre.` },
+            { status: 409 }
+          );
+        }
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
 
